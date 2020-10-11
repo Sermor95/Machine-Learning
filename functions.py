@@ -7,6 +7,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import balanced_accuracy_score
 from result import Result
+import time
+from datetime import timedelta
 
 
 def pearson_corr(x, y):
@@ -21,9 +23,10 @@ def get_worst_feature(feature_i1,feature_i2,X_train,y_train,method_name):
     return feature_i1 if corr1 < corr2 else feature_i2
 
 def criba_Pearson(X,y,limit,method_name):
+    start_time = time.monotonic()
     res = []
-    debug_info = []
-    debug_info.append('CRIBA PEARSON')
+    # debug_info = []
+    # debug_info.append('CRIBA PEARSON')
     droped_columns = set()
     corr = X.corr(method=method_name).abs()
     for i in range(corr.shape[0]):
@@ -31,10 +34,12 @@ def criba_Pearson(X,y,limit,method_name):
             if corr.iloc[i,j] >= limit:
                 worst_feature = get_worst_feature(i,j,X,y,method_name)
                 droped_columns.add(X.columns[worst_feature])
-                debug_info.append(' - {0}/{1} => {2} //--// {0}/y => {3} // {1}/y => {4} //--// worst feature => {5}'.format(X.columns[i],X.columns[j],round(corr.iloc[i,j],4),pearson_corr(X.iloc[:,i],y),pearson_corr(X.iloc[:,j],y),X.columns[worst_feature]))
+                # debug_info.append(' - {0}/{1} => {2} //--// {0}/y => {3} // {1}/y => {4} //--// worst feature => {5}'.format(X.columns[i],X.columns[j],round(corr.iloc[i,j],4),pearson_corr(X.iloc[:,i],y),pearson_corr(X.iloc[:,j],y),X.columns[worst_feature]))
     
     res.append(droped_columns)
-    res.append(debug_info)
+    end_time = time.monotonic()
+    res.append(get_execution_time(start_time, end_time))
+    # res.append(debug_info)
     return res
 
 def apply_one_hot_encoding(X,categorical_features):
@@ -69,16 +74,19 @@ def forward_selection_embedded(X,y,n):
 
 def feature_selection(method,X,y,n):
     res = []
+    start_time = time.monotonic()
     if method == 'pearson':
         res.append(pearson_correlation_filter(X,y,n))
     if method == 'forward':
         res.append(forward_selection_wrapper(X,y,n))
     if method == 'feature_importance':
         res.append(forward_selection_embedded(X,y,n))
-    res.append(1995.0)
+    end_time = time.monotonic()
+    res.append(res.append(get_execution_time(start_time, end_time)))
     return res
 
 def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, y_test):
+
     X_train_aux = X_train[feature_selection[0]]
     X_test_aux = X_test[feature_selection[0]]
     
@@ -88,3 +96,7 @@ def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, 
     bal_accur = balanced_accuracy_score(y_pred_aux, y_test)
     result = Result(method_name, criba, bal_accur, feature_selection[1], list(feature_selection[0])).toJSON()
     return result
+
+def get_execution_time(start_time, end_time):
+    diff = timedelta(seconds=end_time - start_time)
+    return diff.total_seconds()

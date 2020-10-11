@@ -2,8 +2,10 @@ import json
 
 class Result:     
     
-    def __init__(self, name, criba, accuracy, time, features):
-        self.name = name
+    def __init__(self, method, criba, accuracy, time, features):
+        self.feature_selection_id = ''
+        self.launch = None
+        self.method = method
         self.criba = criba
         self.accuracy = accuracy
         self.time = time

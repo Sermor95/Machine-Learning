@@ -8,8 +8,14 @@ app = Flask(__name__)
 
 @app.route('/', methods=["GET"])
 def homepage():
-    feature_selection = get_feature_selection()
-    return render_template("index.html", entries=feature_selection)
+    rows = get_documents('config')
+    return render_template("index.html", entries=rows)
+
+@app.route('/result', methods=["GET"])
+def results():
+    config_id = request.args.get('config')
+    rows = get_documents('result')
+    return render_template("results.html", entries=rows)
 
 
 @app.route('/feature-selection', methods=["POST"])
@@ -18,17 +24,16 @@ def feature_selection():
     
     try:
         #integer tiempo = myfdetec.procesa()
-        print('0----->\n')
         feature_selection = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['ohe'], json_request['categorical_features'])
-        print('0.1----->\n')
         feature_selection.procesa()
         # print('1----->\n: {}'.format(feature_selection.getResultados()))
         output = ''.join(feature_selection.getResultados())
         # print('2----->\n: {}'.format(output))
-        save_feature_selection(feature_selection.toJSON())
+        save_feature_selection(feature_selection)
         # print('3----->\n')
-    except:
-        output = 'Bad request'
+    except Exception as e:
+        output = str(e)
+        print(f'Save fail: {e}')
     return output
 
 if __name__ == "__main__":
