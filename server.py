@@ -11,30 +11,30 @@ def homepage():
     rows = get_documents('config')
     return render_template("index.html", entries=rows)
 
+@app.route('/launch', methods=["GET"])
+def launch():
+    rows = get_documents('config')
+    return render_template("index.html", entries=rows)
+
 @app.route('/result', methods=["GET"])
 def results():
-    config_id = request.args.get('config')
-    rows = get_documents('result')
+    config_id = request.args.get('config').replace('\'','')
+    rows = get_results_by_config(config_id)
     return render_template("results.html", entries=rows)
 
 
 @app.route('/feature-selection', methods=["POST"])
 def feature_selection():
     json_request = request.get_json()
-    
     try:
-        #integer tiempo = myfdetec.procesa()
-        feature_selection = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['ohe'], json_request['categorical_features'])
-        feature_selection.procesa()
-        # print('1----->\n: {}'.format(feature_selection.getResultados()))
-        output = ''.join(feature_selection.getResultados())
-        # print('2----->\n: {}'.format(output))
-        save_feature_selection(feature_selection)
-        # print('3----->\n')
+        feat_selection = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['ohe'], json_request['categorical_features'])
+        feat_selection.procesa()
+        # output = ''.join(feat_selection.getResultados())
+        save_feature_selection(feat_selection)
     except Exception as e:
-        output = str(e)
+        # output = str(e)
         print(f'Save fail: {e}')
-    return output
+    return homepage()
 
 if __name__ == "__main__":
     app.run()

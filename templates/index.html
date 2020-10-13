@@ -1,151 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
-  <title>Starter Template - Materialize</title>
+{% extends 'template.html' %}
+{% block content  %}
 
-  <!-- CSS  -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-</head>
-<body>
-  <nav class="light-blue lighten-1" role="navigation">
-    <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Logo</a>
-      <ul class="right hide-on-med-and-down">
-        <li><a href="#">Navbar Link</a></li>
-      </ul>
 
-      <ul id="nav-mobile" class="sidenav">
-        <li><a href="#">Navbar Link</a></li>
-      </ul>
-      <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-    </div>
-  </nav>
-  <div class="section no-pad-bot" id="index-banner">
-    <div class="container">
-      <br><br>
-      <h1 class="header center orange-text">FEATURE SELECTION</h1>
-      <div class="row center">
-        <h5 class="header col s12 light">This section shows the accuracy after applying several Feature Selection methods on the given dataset</h5>
-      </div>
-      <div class="row center">
-        <a href="http://materializecss.com/getting-started.html" id="download-button" class="btn-large waves-effect waves-light orange">New experiment</a>
-      </div>
-      <br><br>
-
-    </div>
-  </div>
-
+<div class="section no-pad-bot" id="index-banner">
   <div class="container">
-    <table>
-      <thead>
-        <tr>
-          <th>Dataset</th>
-          <th>Criba</th>
-          <th>OneHotEncoder</th>
-          <th>Categorical Features</th>
-          <th>Results</th>
-        </tr>
-      </thead>
-      <tbody>
-        
-        {% for row in entries %}
-        <tr>
-          <td>{{row.dataset}}</td>
-          <td>{{row.criba}}</td>
-          <td>{{row.ohe}}</td>
-          <td>{{row.categorical_features}}</td>
-          <td><a href="http://localhost:5000/result?config='{{row._id}}'">Show</a></td>
-        </tr>
-        {% else %}
-        <tr>
-          <td>Collection is empty</td>
-        </tr>
-        {% endfor %}   
-        
-      </tbody>
-    </table>
-  </div>
- 
-  <!-- <div class="container">
-    <div class="section">
-
-        Icon Section  
-      <div class="row">
-        <div class="col s12 m4">
-          <div class="icon-block">
-            <h2 class="center light-blue-text"><i class="material-icons">flash_on</i></h2>
-            <h5 class="center">Speeds up development</h5>
-
-            <p class="light">We did most of the heavy lifting for you to provide a default stylings that incorporate our custom components. Additionally, we refined animations and transitions to provide a smoother experience for developers.</p>
-          </div>
-        </div>
-
-        <div class="col s12 m4">
-          <div class="icon-block">
-            <h2 class="center light-blue-text"><i class="material-icons">group</i></h2>
-            <h5 class="center">User Experience Focused</h5>
-
-            <p class="light">By utilizing elements and principles of Material Design, we were able to create a framework that incorporates components and animations that provide more feedback to users. Additionally, a single underlying responsive system across all platforms allow for a more unified user experience.</p>
-          </div>
-        </div>
-
-        <div class="col s12 m4">
-          <div class="icon-block">
-            <h2 class="center light-blue-text"><i class="material-icons">settings</i></h2>
-            <h5 class="center">Easy to work with</h5>
-
-            <p class="light">We have provided detailed documentation as well as specific code examples to help new users get started. We are also always open to feedback and can answer any questions a user may have about Materialize.</p>
-          </div>
+    <br><br>
+    <h1 class="header center orange-text">FEATURE SELECTION</h1>
+    <div class="row center">
+      <h5 class="header col s12 light">This section shows the accuracy after applying several Feature Selection methods on the given dataset</h5>
+    </div>
+    <div class="row center">
+      <!-- Modal Trigger -->
+<!--        <button data-target="modal-launch" class="btn modal-trigger">Modal</button>-->
+      <div class="container">
+        <a id="btnNewLaunch" class="waves-effect waves-light btn modal-trigger" data-target="modal1">New launch!</a>
+        <!-- Modal Structure -->
+        <div id="modal1" class="modal">
+            <div class="modal-content">
+                <h4>Configuration</h4>
+                <input id="dataset" type="text"><label for="dataset">Dataset</label>
+                <input id="criba" type="text"><label for="criba">Criba</label>
+                <input id="ohe" type="text"><label for="ohe">One Hot Encoder</label>
+                <input id="cat_feat" type="text"><label for="cat_feat">Categorical features</label>
+            </div>
+            <div class="modal-footer">
+              <a href="#!" class="modal-close btn waves-effect waves-light red lighten-2">Cancel</a>
+              <button onclick="submitLaunch()" class="modal-close btn waves-effect waves-light deep-purple lighten-1">Launch</button>
+            </div>
         </div>
       </div>
-
     </div>
     <br><br>
-  </div> -->
 
-  <footer class="page-footer orange">
-    <!-- <div class="container">
-      <div class="row">
-        <div class="col l6 s12">
-          <h5 class="white-text">Company Bio</h5>
-          <p class="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
+  </div>
+</div>
 
+<div class="container">
+  <table class="responsive-table">
+    <thead>
+      <tr>
+        <th>Dataset</th>
+        <th>Criba</th>
+        <th>OneHotEncoder</th>
+        <th>Categorical Features</th>
+        <th>Results</th>
+      </tr>
+    </thead>
+    <tbody>
 
-        </div>
-        <div class="col l3 s12">
-          <h5 class="white-text">Settings</h5>
-          <ul>
-            <li><a class="white-text" href="#!">Link 1</a></li>
-            <li><a class="white-text" href="#!">Link 2</a></li>
-            <li><a class="white-text" href="#!">Link 3</a></li>
-            <li><a class="white-text" href="#!">Link 4</a></li>
-          </ul>
-        </div>
-        <div class="col l3 s12">
-          <h5 class="white-text">Connect</h5>
-          <ul>
-            <li><a class="white-text" href="#!">Link 1</a></li>
-            <li><a class="white-text" href="#!">Link 2</a></li>
-            <li><a class="white-text" href="#!">Link 3</a></li>
-            <li><a class="white-text" href="#!">Link 4</a></li>
-          </ul>
-        </div>
-      </div>
-    </div> -->
-    <div class="footer-copyright">
-      <div class="container">
-      Made by <a class="orange-text text-lighten-3" href="http://materializecss.com">Sergio Morales</a>
-      </div>
-    </div>
-  </footer>
+      {% for row in entries %}
+      <tr>
+        <td>{{row.dataset}}</td>
+        <td>{{row.criba}}</td>
+        <td>{{row.ohe}}</td>
+        <td>{{row.categorical_features}}</td>
+        <td><a href="/result?config='{{row._id}}'">Show</a></td>
+      </tr>
+      {% else %}
+      <tr>
+        <td>Collection is empty</td>
+      </tr>
+      {% endfor %}
+
+    </tbody>
+  </table>
+</div>
 
 
-  <!--  Scripts-->
-  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#modal1').modal();
+});
+function submitLaunch(){
+    var dataset = $('#dataset').val();
+    var criba = $('#criba').val();
+    var ohe = $('#ohe').val();
+    var cat_feat = $('#cat_feat').val();
+    var post = '{'+
+            '"dataset": "'+dataset+'",'+
+            '"criba": '+criba+','+
+            '"ohe": "'+ohe+'",'+
+            '"categorical_features": '+cat_feat+
+        '}';
+    $.ajax({
+        url: './feature-selection',
+        type: 'POST',
+        data: post,
+        contentType: "application/json",
+        dataType: 'json'
+    }).done(function(data){
+        M.toast({html: 'Your launch was executed correctly'});
+    });
+}
+</script>
+
+{% endblock %}
 
 
-  </body>
-</html>
+
+
+
+

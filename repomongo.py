@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from pprint import pprint
 from config import Config
+from bson import ObjectId
 import json
 
 def get_db():
@@ -48,7 +49,7 @@ def find_one_config(dataset, criba, ohe, categorical_features):
 def count_result_by_config(config_id):
     db = get_db()
     posts_result = db.fs_result
-    return posts_result.count({ "feature_selection_id": config_id})/6
+    return posts_result.count({ "feature_selection_id": ObjectId(config_id)})/8
 
 def get_documents(object):
     table = 'fs_'+object
@@ -56,3 +57,9 @@ def get_documents(object):
     collection = db[table]
     entries = collection.find({})
     return entries
+
+def get_results_by_config(config_id):
+    db = get_db()
+    posts_result = db.fs_result
+    # posts_result.find({"feature_selection_id": ObjectId(config_id)} )
+    return posts_result.find({"feature_selection_id": ObjectId(config_id)})

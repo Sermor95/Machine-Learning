@@ -64,7 +64,7 @@ def forward_selection_wrapper(X,y,n):
     return list(model_forward.k_feature_names_)
 
 def forward_selection_embedded(X,y,n):
-    model = DecisionTreeClassifier()
+    model = RandomForestRegressor()
     model.fit(X, y)
     feat_importance = pd.DataFrame(model.feature_importances_, columns=['Feature_Importance'],
                             index=X.columns)

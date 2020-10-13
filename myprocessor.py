@@ -24,7 +24,6 @@ class FeatureSelection:
         data = pd.read_csv(self.dataset)
         X = data.iloc[:,:-1]
         y = data.iloc[:,-1]
-        print('debug CARGA DE DATOS')
 
         # ONE HOT ENCODING
         if self.categorical_features: # if list is not empty
@@ -32,11 +31,9 @@ class FeatureSelection:
         else:
             features = X.columns
         X = apply_one_hot_encoding(X,features)
-        print('debug ONE HOT ENCODING')
 
         # SPLIT
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-        print('debug SPLIT')
 
         # CRIBA
         criba = criba_Pearson(X_train,y_train,0.75,'pearson')
@@ -49,28 +46,23 @@ class FeatureSelection:
         results.append(get_result('Criba Person', features_without_criba, False, X_train, X_test, y_train, y_test))
         results.append(get_result('Criba Person', features_with_criba, True, X_train, X_test, y_train, y_test))
 
-        print('debug CRIBA')
-
         # FILTRO: PEARSON CORRELATION
         best_features_pearson_s = feature_selection('pearson',X_train, y_train,0.0)
         best_features_pearson_c = feature_selection('pearson',X_train_new, y_train,0.0)
         results.append(get_result('Person Correlation', best_features_pearson_s, False, X_train, X_test, y_train, y_test))
         results.append(get_result('Person Correlation', best_features_pearson_c, True, X_train, X_test, y_train, y_test))
-        print('debug PEARSON CORRELATION')
 
         # ENVOLTURA: FORWARD SELECTION
-        # best_features_forward_s = feature_selection('forward',X_train, y_train,20)
-        # best_features_forward_c = feature_selection('forward',X_train_new,y_train,20)
-        # results.append(get_result('Forward Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
-        # results.append(get_result('Forward Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
+        best_features_forward_s = feature_selection('forward',X_train, y_train,20)
+        best_features_forward_c = feature_selection('forward',X_train_new,y_train,20)
+        results.append(get_result('Forward Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
+        results.append(get_result('Forward Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
 
-        print('debug FORWARD SELECTION')
         # INTEGRADO: FEATURE IMPORTANCE
         best_features_importance_s = feature_selection('feature_importance',X_train, y_train,20)
         best_features_importance_c = feature_selection('feature_importance',X_train_new,y_train,20)
         results.append(get_result('Feature Importance', best_features_importance_s, False, X_train, X_test, y_train, y_test))
         results.append(get_result('Feature Importance', best_features_importance_c, True, X_train, X_test, y_train, y_test))
-        print('debug FEATURE IMPORTANCE')
         self.results = results
 
     def getResultados(self):
