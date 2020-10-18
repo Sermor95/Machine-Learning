@@ -1,6 +1,5 @@
-{% extends 'template.html' %}
+{% extends 'base.html' %}
 {% block content  %}
-
 
 <div class="section no-pad-bot" id="index-banner">
   <div class="container">
@@ -20,6 +19,8 @@
                 <h4>Configuration</h4>
                 <input id="dataset" type="text"><label for="dataset">Dataset</label>
                 <input id="criba" type="text"><label for="criba">Criba</label>
+                <input id="limit" type="text"><label for="limit">Limit of Features</label>
+                <input id="pearson_base" type="text"><label for="pearson_base">Pearson base</label>
                 <input id="ohe" type="text"><label for="ohe">One Hot Encoder</label>
                 <input id="cat_feat" type="text"><label for="cat_feat">Categorical features</label>
             </div>
@@ -41,6 +42,8 @@
       <tr>
         <th>Dataset</th>
         <th>Criba</th>
+        <th>Limit of Features</th>
+        <th>Pearson base</th>
         <th>OneHotEncoder</th>
         <th>Categorical Features</th>
         <th>Results</th>
@@ -52,6 +55,8 @@
       <tr>
         <td>{{row.dataset}}</td>
         <td>{{row.criba}}</td>
+        <td>{{row.limit}}</td>
+        <td>{{row.pearson_base}}</td>
         <td>{{row.ohe}}</td>
         <td>{{row.categorical_features}}</td>
         <td><a href="/result?config='{{row._id}}'">Show</a></td>
@@ -66,38 +71,7 @@
   </table>
 </div>
 
-
-<script type="text/javascript">
-$(document).ready(function(){
-    $('#modal1').modal();
-});
-function submitLaunch(){
-    var dataset = $('#dataset').val();
-    var criba = $('#criba').val();
-    var ohe = $('#ohe').val();
-    var cat_feat = $('#cat_feat').val();
-    var post = '{'+
-            '"dataset": "'+dataset+'",'+
-            '"criba": '+criba+','+
-            '"ohe": "'+ohe+'",'+
-            '"categorical_features": '+cat_feat+
-        '}';
-    $.ajax({
-        url: './feature-selection',
-        type: 'POST',
-        data: post,
-        contentType: "application/json",
-        dataType: 'json'
-    }).done(function(data){
-        M.toast({html: 'Your launch was executed correctly'});
-    });
-}
-</script>
-
 {% endblock %}
-
-
-
-
-
-
+{% block script %}
+<script src="{{url_for('static',filename='js/configs.js')}}"></script>
+{% endblock %}

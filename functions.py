@@ -49,21 +49,40 @@ def apply_one_hot_encoding(X,categorical_features):
         X = X.drop([col], axis=1) 
     return X
 
-def pearson_correlation_filter(X,y,base):
+def filter_pearson_correlation(X,y,n,base):
     best_features = set()
-    for i in range(len(X.columns)):
-        corr = pearson_corr(X.iloc[:,i],y)
-        if corr > base:
-            col = X.columns[i]
-            best_features.add(col)
+    run = True
+    while run:
+        for i in range(len(X.columns)):
+            corr = pearson_corr(X.iloc[:,i],y)
+            if corr > base:
+                col = X.columns[i]
+                best_features.add(col)
+                if len(best_features)==n:
+                    run = False
     return best_features
 
-def forward_selection_wrapper(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,verbose=0,cv=5,n_jobs=-1,scoring='r2')
+def wrapper_forward_selection(X,y,n):
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=False,verbose=0,cv=5,n_jobs=-1,scoring='r2')
     model_forward.fit(X,y)
     return list(model_forward.k_feature_names_)
 
-def forward_selection_embedded(X,y,n):
+def wrapper_backward_selection(X,y,n):
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=False,verbose=0,cv=5,n_jobs=-1,scoring='r2')
+    model_forward.fit(X,y)
+    return list(model_forward.k_feature_names_)
+
+def wrapper_forward_floating_selection(X,y,n):
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=True,verbose=0,cv=5,n_jobs=-1,scoring='r2')
+    model_forward.fit(X,y)
+    return list(model_forward.k_feature_names_)
+
+def wrapper_backward_floating_selection(X,y,n):
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=True,verbose=0,cv=5,n_jobs=-1,scoring='r2')
+    model_forward.fit(X,y)
+    return list(model_forward.k_feature_names_)
+
+def embedded_forward_selection(X,y,n):
     model = RandomForestRegressor()
     model.fit(X, y)
     feat_importance = pd.DataFrame(model.feature_importances_, columns=['Feature_Importance'],
@@ -72,15 +91,21 @@ def forward_selection_embedded(X,y,n):
     best_features = feat_importance[feat_importance['Feature_Importance']>0] 
     return best_features.index[0:n]
 
-def feature_selection(method,X,y,n):
+def feature_selection(method,X,y,n,pearson_base):
     res = []
     start_time = time.monotonic()
     if method == 'pearson':
-        res.append(pearson_correlation_filter(X,y,n))
+        res.append(filter_pearson_correlation(X,y,n,pearson_base))
     if method == 'forward':
-        res.append(forward_selection_wrapper(X,y,n))
+        res.append(wrapper_forward_selection(X,y,n))
+    if method == 'backward':
+        res.append(wrapper_backward_selection(X,y,n))
+    if method == 'forward_floating':
+        res.append(wrapper_forward_floating_selection(X,y,n))
+    if method == 'backward_floating':
+        res.append(wrapper_backward_floating_selection(X,y,n))
     if method == 'feature_importance':
-        res.append(forward_selection_embedded(X,y,n))
+        res.append(embedded_forward_selection(X,y,n))
     end_time = time.monotonic()
     res.append(res.append(get_execution_time(start_time, end_time)))
     return res
