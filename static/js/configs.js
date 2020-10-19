@@ -1,5 +1,6 @@
 $(document).ready(function(){
     $('#modal1').modal();
+    $('select').formSelect();
 });
 function submitLaunch(){
     var dataset = $('#dataset').val();
@@ -24,5 +25,18 @@ function submitLaunch(){
         dataType: 'json'
     }).done(function(data){
         M.toast({html: 'Your launch was executed correctly'});
+    });
+}
+
+function filterConfig(){
+    var dataset = $('#select-dataset option:selected').val();
+
+    $.ajax({
+        type:'GET',
+        url:'/config',
+        data:'dataset='+dataset
+    }).done(function(resp){
+        $('#configs').html($(resp).find('#configs').html())
+        M.toast({html: 'FILTER DONE'});
     });
 }

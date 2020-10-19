@@ -3,7 +3,7 @@ import json
 class Result:     
     
     def __init__(self, method, criba, accuracy, time, features):
-        self.feature_selection_id = ''
+        self.config_id = ''
         self.launch = None
         self.method = method
         self.criba = criba

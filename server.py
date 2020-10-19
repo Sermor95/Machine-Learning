@@ -13,6 +13,12 @@ def homepage():
     rows = get_documents('config')
     return render_template("configs.html", entries=rows)
 
+@app.route('/config', methods=["GET"])
+def filter_config():
+    dataset = request.args.get('dataset')
+    results = find_configs_by(dataset)
+    return render_template("configs.html", entries=results, dataset=dataset)
+
 @app.route('/launch', methods=["GET"])
 def launch():
     rows = get_documents('config')
@@ -35,7 +41,7 @@ def feature_selection():
         save_feature_selection(feat_selection)
     except Exception as e:
         # output = str(e)
-        print(f'Save fail: {e}')
+        print(f'Procces fail: {e}')
     return homepage()
 
 @app.route('/analyze', methods=["GET"])

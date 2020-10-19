@@ -8,35 +8,56 @@
     <div class="row center">
       <h5 class="header col s12 light">This section shows the accuracy after applying several Feature Selection methods on the given dataset</h5>
     </div>
-    <div class="row center">
-      <!-- Modal Trigger -->
-<!--        <button data-target="modal-launch" class="btn modal-trigger">Modal</button>-->
-      <div class="container">
-        <a id="btnNewLaunch" class="waves-effect waves-light btn modal-trigger" data-target="modal1">New launch!</a>
-        <!-- Modal Structure -->
-        <div id="modal1" class="modal">
-            <div class="modal-content">
-                <h4>Configuration</h4>
-                <input id="dataset" type="text"><label for="dataset">Dataset</label>
-                <input id="criba" type="text"><label for="criba">Criba</label>
-                <input id="limit" type="text"><label for="limit">Limit of Features</label>
-                <input id="pearson_base" type="text"><label for="pearson_base">Pearson base</label>
-                <input id="ohe" type="text"><label for="ohe">One Hot Encoder</label>
-                <input id="cat_feat" type="text"><label for="cat_feat">Categorical features</label>
-            </div>
-            <div class="modal-footer">
-              <a href="#!" class="modal-close btn waves-effect waves-light red lighten-2">Cancel</a>
-              <button onclick="submitLaunch()" class="modal-close btn waves-effect waves-light deep-purple lighten-1">Launch</button>
-            </div>
+
+    <!--        Modal NEW LAUNCH-->
+    <div id="modal1" class="modal">
+        <div class="modal-content">
+            <h4>Configuration</h4>
+            <input id="dataset" type="text"><label for="dataset">Dataset</label>
+            <input id="criba" type="text"><label for="criba">Criba</label>
+            <input id="limit" type="text"><label for="limit">Limit of Features</label>
+            <input id="pearson_base" type="text"><label for="pearson_base">Pearson base</label>
+            <input id="ohe" type="text"><label for="ohe">One Hot Encoder</label>
+            <input id="cat_feat" type="text"><label for="cat_feat">Categorical features</label>
         </div>
-      </div>
+        <div class="modal-footer">
+          <a href="#!" class="modal-close btn waves-effect waves-light red lighten-2">Cancel</a>
+          <button onclick="submitLaunch()" class="modal-close btn waves-effect waves-light deep-purple lighten-1">Launch</button>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col s2 left-align">
+          <a id="btnNewLaunch" class="waves-effect waves-light btn modal-trigger" data-target="modal1">New launch!</a>
+        </div>
+
+        <div class="col s8 center-align">
+          <div id="filter">
+            <div class="input-field col s6 left-align">
+            </div>
+            <div class="input-field col s6 right-align">
+              <select id="select-dataset">
+                <option value="" disabled selected>Choose your dataset</option>
+                <option value="titanic">Titanic</option>
+                <option value="cancer">Cancer</option>
+              </select>
+              <label>Dataset</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s2 right-align">
+          <button onclick="filterConfig()" class="btn waves-effect waves-light deep-purple lighten-1">Filter</button>
+        </div>
+
     </div>
     <br><br>
 
   </div>
 </div>
 
-<div class="container">
+<div class="container" id="configs">
   <table class="responsive-table">
     <thead>
       <tr>
@@ -46,6 +67,7 @@
         <th>Pearson base</th>
         <th>OneHotEncoder</th>
         <th>Categorical Features</th>
+        <th>Launchers</th>
         <th>Results</th>
       </tr>
     </thead>
@@ -59,6 +81,7 @@
         <td>{{row.pearson_base}}</td>
         <td>{{row.ohe}}</td>
         <td>{{row.categorical_features}}</td>
+        <td>{{row.launchers}}</td>
         <td><a href="/result?config='{{row._id}}'">Show</a></td>
       </tr>
       {% else %}
