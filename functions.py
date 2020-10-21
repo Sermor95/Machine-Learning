@@ -1,7 +1,8 @@
 import pandas as pd
-import numpy as numpy
+import numpy as np
 from sklearn import tree
 from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import mutual_info_classif, RFE
 from mlxtend.feature_selection import SequentialFeatureSelector as sfs
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeClassifier
@@ -10,6 +11,8 @@ from result import Result
 import time
 from datetime import timedelta
 
+def get_methods():
+    return ['Criba Person', 'Person Correlation', 'Mutual Information', 'Forward Selection', 'Backward Selection', 'Forward Floating Selection', 'Backward Floating Selection', 'Feature Importance', 'RFE']
 
 def pearson_corr(x, y):
     return abs(round(x.corr(y),6))
@@ -22,7 +25,7 @@ def get_worst_feature(feature_i1,feature_i2,X_train,y_train,method_name):
     corr2 = pearson_corr(feature_2,feature_y)
     return feature_i1 if corr1 < corr2 else feature_i2
 
-def criba_Pearson(X,y,limit,method_name):
+def criba_Pearson(X,y,top_feat,method_name):
     start_time = time.monotonic()
     res = []
     # debug_info = []
@@ -31,7 +34,7 @@ def criba_Pearson(X,y,limit,method_name):
     corr = X.corr(method=method_name).abs()
     for i in range(corr.shape[0]):
         for j in range(i+1, corr.shape[0]):
-            if corr.iloc[i,j] >= limit:
+            if corr.iloc[i,j] >= top_feat:
                 worst_feature = get_worst_feature(i,j,X,y,method_name)
                 droped_columns.add(X.columns[worst_feature])
                 # debug_info.append(' - {0}/{1} => {2} //--// {0}/y => {3} // {1}/y => {4} //--// worst feature => {5}'.format(X.columns[i],X.columns[j],round(corr.iloc[i,j],4),pearson_corr(X.iloc[:,i],y),pearson_corr(X.iloc[:,j],y),X.columns[worst_feature]))
@@ -42,8 +45,15 @@ def criba_Pearson(X,y,limit,method_name):
     # res.append(debug_info)
     return res
 
-def apply_one_hot_encoding(X,categorical_features):
-    for col in categorical_features:
+def need_ohe(dataset, X):
+    if dataset == 'titanic':
+        return True
+    else:
+        return False
+
+def apply_one_hot_encoding(X):
+    cat_feat_titanic = ['Embarked', 'Initial', 'Deck', 'Title']
+    for col in cat_feat_titanic:
         ohe_col = pd.get_dummies(X[col], prefix=col)
         X = pd.concat([X,ohe_col], axis=1)
         X = X.drop([col], axis=1) 
@@ -91,11 +101,26 @@ def embedded_forward_selection(X,y,n):
     best_features = feat_importance[feat_importance['Feature_Importance']>0] 
     return best_features.index[0:n]
 
-def feature_selection(method,X,y,n,pearson_base):
+def filter_mutual_info_select(X,y,n,base):
+    mi = list(enumerate(mutual_info_classif(X,y)))
+    mi.sort(reverse=True, key = lambda x: x[1])
+    # print(mi)
+    f_best = []
+    for (ind,rank) in mi:
+        if rank > base:
+            f_best.append(ind)
+    return X.columns[f_best]
+
+def hybrid_RFE(X,y,n,base):
+    rfe = RFE(estimator=RandomForestRegressor(), step=1, n_features_to_select=n)
+    rfe.fit(X, y)
+    return X.columns[np.where(rfe.support_ == True)[0]]
+
+def feature_selection(method,X,y,n,base):
     res = []
     start_time = time.monotonic()
     if method == 'pearson':
-        res.append(filter_pearson_correlation(X,y,n,pearson_base))
+        res.append(filter_pearson_correlation(X,y,n,base))
     if method == 'forward':
         res.append(wrapper_forward_selection(X,y,n))
     if method == 'backward':
@@ -106,6 +131,10 @@ def feature_selection(method,X,y,n,pearson_base):
         res.append(wrapper_backward_floating_selection(X,y,n))
     if method == 'feature_importance':
         res.append(embedded_forward_selection(X,y,n))
+    if method == 'mutual_information':
+        res.append(filter_mutual_info_select(X,y,n,base))
+    if method == 'RFE':
+        res.append(hybrid_RFE(X,y,n,base))
     end_time = time.monotonic()
     res.append(res.append(get_execution_time(start_time, end_time)))
     return res

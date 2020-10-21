@@ -2,13 +2,14 @@ import json
 
 class Config:
 
-    def __init__(self, dataset, criba, limit, pearson_base, ohe, categorical_features):
+    def __init__(self, dataset, criba, threshold, top_feat):
         self.dataset = dataset
+        self.config_id = ''
         self.criba = criba
-        self.limit = limit
-        self.pearson_base = pearson_base
-        self.ohe = ohe
-        self.categorical_features = categorical_features
+        self.threshold = threshold
+        self.top_feat = top_feat
+        self.launchers = 0
+        self.avg_accuracy = []
 
     def toJSON(self):
         return json.dumps(self.__dict__, default=lambda x:x.__dict__)
