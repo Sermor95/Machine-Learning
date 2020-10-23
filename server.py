@@ -1,6 +1,4 @@
 from flask import Flask, request, render_template
-import sys
-from bson.json_util import dumps
 from bson.json_util import loads
 from myprocessor import FeatureSelection
 from functions import *
@@ -12,102 +10,6 @@ app = Flask(__name__)
 def homepage():
     rows = get_documents('config')
     return render_template("configs.html", entries=rows)
-
-
-# def get_avg_accuracy_by_configs(configs):
-#     methods = get_methods()
-#     cwoc = []
-#     cwc = []
-#     woc = []
-#     wc = []
-#     for c in configs:
-#         cwoc.append(c['config_id'] + '_woc')
-#         cwc.append(c['config_id'] + '_wc')
-#         woc_aux = []
-#         wc_aux = []
-#         for m in methods:
-#             woc_aux.append(get_avg_results_by_configid_method_criba(c['_id'], m, False)) # aplicar sumatorio
-#             wc_aux.append(get_avg_results_by_configid_method_criba(c['_id'], m, True))
-#         woc.append(woc_aux)
-#         wc.append(woc_aux)
-#
-#     return 'lets go'
-
-
-# def get_avg_accuracy_by_configs(configs):
-#     methods = get_methods()
-#
-#     configs_custom_woc = []
-#     configs_custom_wc = []
-#     for c in configs:
-#         results_woc = []
-#         results_wc = []
-#         for m in methods:
-#             avg_woc = get_avg_results_by_configid_method_criba(c['_id'], m, False)
-#             results_woc.append(avg_woc)
-#
-#             avg_wc = get_avg_results_by_configid_method_criba(c['_id'], m, True)
-#             results_wc.append(avg_wc)
-#
-#         config_woc = {
-#             'name': c['config_id']+'_woc',
-#             'data': results_woc
-#         }
-#         configs_custom_woc.append(config_woc)
-#
-#         config_wc = {
-#             'name': c['config_id']+'_wc',
-#             'data': results_wc
-#         }
-#         configs_custom_wc.append(config_wc)
-#
-#
-#     categories = methods
-#     series = configs_custom_woc+configs_custom_wc
-#     res = {
-#         'categories': categories,
-#         'series': series
-#     }
-#     return res
-def get_avg_accuracy_by_configs(configs):
-    methods = get_methods()
-    configs_custom_woc = []
-    configs_custom_wc = []
-    for c in configs:
-        results_woc = []
-        results_wc = []
-        for m in methods:
-            avg_woc = get_avg_results_by_configid_method_criba(c['_id'], m, False)
-            results_woc.append(avg_woc)
-
-            avg_wc = get_avg_results_by_configid_method_criba(c['_id'], m, True)
-            results_wc.append(avg_wc)
-        config_woc = []
-        config_name = c['config_id']+'_woc'
-        config_woc.append(config_name)
-        config_woc = config_woc+results_woc
-        configs_custom_woc.append(config_woc)
-
-        config_wc = []
-        config_name = c['config_id'] + '_wc'
-        config_wc.append(config_name)
-        config_wc = config_wc + results_wc
-        configs_custom_wc.append(config_wc)
-
-
-    categories = ['methods']
-    for m in methods:
-        categories.append(m)
-    series = [categories]
-    for i in range(len(configs_custom_woc)):
-        series.append(configs_custom_woc[i])
-        series.append(configs_custom_wc[i])
-
-    res = {
-        'categories': get_methods(),
-        'series': series
-    }
-    return res
 
 @app.route('/analyze-config', methods=["GET"])
 def analyze_config():
@@ -140,7 +42,7 @@ def results():
 def feature_selection():
     try:
         json_request = request.get_json()
-        feat_selection = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['top_feat'], json_request['threshold'])
+        feat_selection = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['reduction'])
         feat_selection.procesa()
         # output = ''.join(feat_selection.getResultados())
         save_feature_selection(feat_selection)

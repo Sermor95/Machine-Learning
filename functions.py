@@ -1,15 +1,14 @@
 import pandas as pd
 import numpy as np
 from sklearn import tree
-from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import mutual_info_classif, RFE
 from mlxtend.feature_selection import SequentialFeatureSelector as sfs
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import balanced_accuracy_score
 from result import Result
 import time
 from datetime import timedelta
+from repomongo import *
 
 def get_methods():
     return ['Criba Person', 'Person Correlation', 'Mutual Information', 'Forward Selection', 'Backward Selection', 'Forward Floating Selection', 'Backward Floating Selection', 'Feature Importance', 'RFE']
@@ -25,7 +24,7 @@ def get_worst_feature(feature_i1,feature_i2,X_train,y_train,method_name):
     corr2 = pearson_corr(feature_2,feature_y)
     return feature_i1 if corr1 < corr2 else feature_i2
 
-def criba_Pearson(X,y,threshold,method_name):
+def criba_Pearson(X,y,criba,method_name):
     start_time = time.monotonic()
     res = []
     # debug_info = []
@@ -34,7 +33,7 @@ def criba_Pearson(X,y,threshold,method_name):
     corr = X.corr(method=method_name).abs()
     for i in range(corr.shape[0]):
         for j in range(i+1, corr.shape[0]):
-            if corr.iloc[i,j] >= threshold:
+            if corr.iloc[i,j] >= criba:
                 worst_feature = get_worst_feature(i,j,X,y,method_name)
                 droped_columns.add(X.columns[worst_feature])
                 # debug_info.append(' - {0}/{1} => {2} //--// {0}/y => {3} // {1}/y => {4} //--// worst feature => {5}'.format(X.columns[i],X.columns[j],round(corr.iloc[i,j],4),pearson_corr(X.iloc[:,i],y),pearson_corr(X.iloc[:,j],y),X.columns[worst_feature]))
@@ -70,14 +69,14 @@ def filter_pearson_correlation(X,y,threshold):
 
     return best_features
 
-def filter_mutual_info_select(X,y,base):
+def filter_mutual_info_select(X,y,top_feat):
     mi = list(enumerate(mutual_info_classif(X,y)))
     mi.sort(reverse=True, key = lambda x: x[1])
-    f_best = []
-    for (ind,rank) in mi:
-        if rank > base:
-            f_best.append(ind)
-    return X.columns[f_best]
+    f_best = list(map(lambda e: e[0], mi))
+    # for (ind,rank) in mi:
+    #     if rank > threshold:
+    #         f_best.append(ind)
+    return f_best[0:top_feat]
 
 def wrapper_forward_selection(X,y,n):
     model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=False,verbose=0,cv=5,n_jobs=-1,scoring='r2')
@@ -151,3 +150,47 @@ def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, 
 def get_execution_time(start_time, end_time):
     diff = timedelta(seconds=end_time - start_time)
     return diff.total_seconds()
+
+def get_avg_accuracy_by_configs(configs):
+    methods = get_methods()
+    configs_custom_woc = []
+    configs_custom_wc = []
+    for c in configs:
+        results_woc = []
+        results_wc = []
+        for m in methods:
+            avg_woc = get_avg_results_by_configid_method_criba(c['_id'], m, False)
+            results_woc.append(avg_woc)
+
+            avg_wc = get_avg_results_by_configid_method_criba(c['_id'], m, True)
+            results_wc.append(avg_wc)
+        config_woc = []
+        config_name = c['config_id']+'_woc'
+        config_woc.append(config_name)
+        config_woc = config_woc+results_woc
+        configs_custom_woc.append(config_woc)
+
+        config_wc = []
+        config_name = c['config_id'] + '_wc'
+        config_wc.append(config_name)
+        config_wc = config_wc + results_wc
+        configs_custom_wc.append(config_wc)
+
+
+    categories = ['methods']
+    for m in methods:
+        categories.append(m)
+    series = [categories]
+    for i in range(len(configs_custom_woc)):
+        series.append(configs_custom_woc[i])
+        series.append(configs_custom_wc[i])
+
+    res = {
+        'categories': get_methods(),
+        'series': series
+    }
+    return res
+
+
+def get_top_feat(num_columns, reduction):
+    return (num_columns*reduction)/100

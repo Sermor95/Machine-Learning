@@ -5,13 +5,11 @@ $(document).ready(function(){
 function submitLaunch(){
     var dataset = $('#dataset').val();
     var criba = $('#criba').val();
-    var threshold = $('#threshold').val();
-    var top_feat = $('#top-feat').val();
+    var reduction = $('#reduction').val();
     var post = '{'+
             '"dataset": "'+dataset+'",'+
             '"criba": '+criba+','+
-            '"threshold": '+threshold+','+
-            '"top_feat": '+top_feat+
+            '"reduction": '+reduction+
         '}';
     $.ajax({
         url: './feature-selection',
