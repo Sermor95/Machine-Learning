@@ -91,8 +91,8 @@ class FeatureSelection:
         print('6/8')
 
         # EMBEDDED: FEATURE IMPORTANCE
-        best_features_importance_s = feature_selection('feature_importance',X_train, y_train,top_feat,None)
-        best_features_importance_c = feature_selection('feature_importance',X_train_new,y_train,top_feat,None)
+        best_features_importance_s = feature_selection('feature_importance',X_train, y_train,None,threshold)
+        best_features_importance_c = feature_selection('feature_importance',X_train_new,y_train,None,threshold)
         results.append(get_result('Feature Importance', best_features_importance_s, False, X_train, X_test, y_train, y_test))
         results.append(get_result('Feature Importance', best_features_importance_c, True, X_train, X_test, y_train, y_test))
         print('7/8')
