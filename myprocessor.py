@@ -59,31 +59,31 @@ class FeatureSelection:
         print('1/6')
 
         # ENVOLTURA: FORWARD SELECTION
-        # best_features_forward_s = feature_selection('forward',X_train, y_train,limit,None)
-        # best_features_forward_c = feature_selection('forward',X_train_new,y_train,limit,None)
-        # results.append(get_result('Forward Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
-        # results.append(get_result('Forward Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
+        best_features_forward_s = feature_selection('forward',X_train, y_train,limit,None)
+        best_features_forward_c = feature_selection('forward',X_train_new,y_train,limit,None)
+        results.append(get_result('Forward Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
+        results.append(get_result('Forward Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
         print('2/6')
 
         # ENVOLTURA: BACKWARD SELECTION
-        # best_features_forward_s = feature_selection('backward', X_train, y_train, limit,None)
-        # best_features_forward_c = feature_selection('backward', X_train_new, y_train, limit,None)
-        # results.append(get_result('Backward Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
-        # results.append(get_result('Backward Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
+        best_features_forward_s = feature_selection('backward', X_train, y_train, limit,None)
+        best_features_forward_c = feature_selection('backward', X_train_new, y_train, limit,None)
+        results.append(get_result('Backward Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
+        results.append(get_result('Backward Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
         print('3/6')
 
         # ENVOLTURA: FORWARD FLOATING SELECTION
-        # best_features_forward_s = feature_selection('forward_floating', X_train, y_train, limit,None)
-        # best_features_forward_c = feature_selection('forward_floating', X_train_new, y_train, limit,None)
-        # results.append(get_result('Forward Floating Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
-        # results.append(get_result('Forward Floating Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
+        best_features_forward_s = feature_selection('forward_floating', X_train, y_train, limit,None)
+        best_features_forward_c = feature_selection('forward_floating', X_train_new, y_train, limit,None)
+        results.append(get_result('Forward Floating Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
+        results.append(get_result('Forward Floating Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
         print('4/6')
 
         # ENVOLTURA: BACKWARD FLOATING SELECTION
-        # best_features_forward_s = feature_selection('backward_floating', X_train, y_train, limit,None)
-        # best_features_forward_c = feature_selection('backward_floating', X_train_new, y_train, limit,None)
-        # results.append(get_result('Backward Floating Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
-        # results.append(get_result('Backward Floating Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
+        best_features_forward_s = feature_selection('backward_floating', X_train, y_train, limit,None)
+        best_features_forward_c = feature_selection('backward_floating', X_train_new, y_train, limit,None)
+        results.append(get_result('Backward Floating Selection', best_features_forward_s, False, X_train, X_test, y_train, y_test))
+        results.append(get_result('Backward Floating Selection', best_features_forward_c, True, X_train, X_test, y_train, y_test))
         print('5/6')
 
         # INTEGRADO: FEATURE IMPORTANCE
