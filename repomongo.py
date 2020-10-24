@@ -11,26 +11,29 @@ def get_db():
                     password='example')
     return client['machine_learning']
 
-def update_config(key,old_value,new_value):
+def get_documents(object):
+    table = 'fs_'+object
     db = get_db()
-    posts_config = db.fs_config
-    posts_config.update_one({key:old_value},{"$set": {key:new_value}})
+    collection = db[table]
+    entries = collection.find({})
+    return entries
 
 def save_feature_selection(feature_selection):
     db = get_db()
     posts_result = db.fs_result
-    posts_config = db.fs_config
     try:
-        config = find_one_config(feature_selection.dataset, feature_selection.criba, feature_selection.limit, feature_selection.pearson_base, feature_selection.ohe, feature_selection.categorical_features)
+        config = find_one_config(feature_selection.dataset, feature_selection.criba, feature_selection.threshold, feature_selection.top_feat)
+        # Update RESULTS from CONFIG
         if config:
             launchers = config['launchers']+1
             fs_id = config['_id']
-            update_config("launchers",config['launchers'],launchers)
+            update_config(fs_id,"launchers",launchers)
+        # save new CONFIG
         else:
             launchers = 1
-            config = Config(feature_selection.dataset, feature_selection.criba, feature_selection.limit, feature_selection.pearson_base, feature_selection.ohe, feature_selection.categorical_features)
+            config = Config(feature_selection.dataset, feature_selection.criba, feature_selection.threshold, feature_selection.top_feat)
             config.launchers = launchers
-            inserted = posts_config.insert_one(json.loads(config.toJSON()))
+            inserted = save_config(config)
             fs_id = inserted.inserted_id
         results = []
         for result in feature_selection.results:
@@ -44,40 +47,44 @@ def save_feature_selection(feature_selection):
         pass
 
 
-def find_one_config(dataset, criba, limit, pearson_base, ohe, categorical_features):
+# CRUDS for CONFIG
+
+def save_config(config):
+    config_by_dataset = count_configs_by_dataset(config.dataset)
+    config.config_id = config.dataset[0:3]+'_conf_'+str(config_by_dataset+1)
+    db = get_db()
+    posts_config = db.fs_config
+    inserted = posts_config.insert_one(json.loads(config.toJSON()))
+    return inserted
+
+def update_config(id,key,new_value):
+    db = get_db()
+    posts_config = db.fs_config
+    posts_config.update_one({"_id":ObjectId(id)},{"$set": {key:new_value}})
+
+
+# Queries for CONFIG
+def find_config_by_id(id):
     db = get_db()
     posts = db.fs_config
     try:
-        res = posts.find_one({"dataset": dataset, "criba": criba, "limit": limit, "pearson_base": pearson_base, "ohe": ohe, "categorical_features": categorical_features})
+        res = posts.find_one({"_id": ObjectId(id)})
         pass
     except Exception as e:
         print(f'Find One fail: {e}')
     return res
 
-def count_result_by_config(config_id):
+def find_one_config(dataset, criba, threshold, top_feat):
     db = get_db()
-    posts_result = db.fs_result
-    return posts_result.count({ "config_id": ObjectId(config_id)})/14
+    posts = db.fs_config
+    try:
+        res = posts.find_one({"dataset": dataset, "criba": criba, "threshold": threshold, "top_feat": top_feat})
+        pass
+    except Exception as e:
+        print(f'Find One fail: {e}')
+    return res
 
-def get_documents(object):
-    table = 'fs_'+object
-    db = get_db()
-    collection = db[table]
-    entries = collection.find({})
-    return entries
-
-def get_results_by_config(config_id):
-    db = get_db()
-    posts_result = db.fs_result
-    # posts_result.find({"feature_selection_id": ObjectId(config_id)} )
-    return posts_result.find({"config_id": ObjectId(config_id)})
-
-def get_distinct_from_results(attr):
-    db = get_db()
-    collection = db['fs_result']
-    return collection.find().distinct(attr)
-
-def find_configs_by(dataset):
+def get_configs_by_dataset(dataset):
     db = get_db()
     posts = db.fs_config
     try:
@@ -87,7 +94,23 @@ def find_configs_by(dataset):
         print(f'Find CONFIG fail: {e}')
     return res
 
-def find_results_by(config_id,method,criba):
+def count_configs_by_dataset(dataset):
+    db = get_db()
+    posts_result = db.fs_config
+    return posts_result.count({"dataset": dataset})
+
+
+# CRUDS for RESULT
+
+
+
+# Queries for RESULT
+def count_result_by_config(config_id):
+    db = get_db()
+    posts_result = db.fs_result
+    return posts_result.count({ "config_id": ObjectId(config_id)})/18
+
+def get_results_by_configid_method_criba(config_id,method,criba):
     db = get_db()
     posts = db.fs_result
     try:
@@ -96,3 +119,22 @@ def find_results_by(config_id,method,criba):
     except Exception as e:
         print(f'Find By method and criba fail: {e}')
     return res
+
+def get_avg_results_by_configid_method_criba(config_id,method,criba):
+    results = get_results_by_configid_method_criba(config_id,method,criba);
+    maped_list = list(map(lambda res: res['accuracy'], results))
+    if len(maped_list) == 0:
+        print('here')
+    return sum(maped_list)/len(maped_list)
+
+
+def get_distinct_from_results(attr):
+    db = get_db()
+    collection = db['fs_result']
+    return collection.find().distinct(attr)
+
+def get_results_by_config(config_id):
+    db = get_db()
+    posts_result = db.fs_result
+    # posts_result.find({"feature_selection_id": ObjectId(config_id)} )
+    return posts_result.find({"config_id": ObjectId(config_id)})

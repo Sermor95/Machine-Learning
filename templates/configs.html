@@ -13,12 +13,10 @@
     <div id="modal1" class="modal">
         <div class="modal-content">
             <h4>Configuration</h4>
-            <input id="dataset" type="text"><label for="dataset">Dataset</label>
-            <input id="criba" type="text"><label for="criba">Criba</label>
-            <input id="limit" type="text"><label for="limit">Limit of Features</label>
-            <input id="pearson_base" type="text"><label for="pearson_base">Pearson base</label>
-            <input id="ohe" type="text"><label for="ohe">One Hot Encoder</label>
-            <input id="cat_feat" type="text"><label for="cat_feat">Categorical features</label>
+            <label for="dataset">Dataset</label><input id="dataset" type="text">
+            <label for="criba">Criba</label><input id="criba" type="text">
+            <label for="threshold">Threshold</label><input id="threshold" type="text">
+            <label for="top-feat">Top Features</label><input id="top-feat" type="text">
         </div>
         <div class="modal-footer">
           <a href="#!" class="modal-close btn waves-effect waves-light red lighten-2">Cancel</a>
@@ -48,25 +46,24 @@
         </div>
 
         <div class="col s2 right-align">
-          <button onclick="filterConfig()" class="btn waves-effect waves-light deep-purple lighten-1">Filter</button>
+          <button onclick="analyzeConfig()" class="btn waves-effect waves-light deep-purple lighten-1">Analyze</button>
         </div>
 
     </div>
-    <br><br>
 
   </div>
 </div>
-
+<figure class="highcharts-figure">
+    <div id="chart-config"></div>
+</figure>
 <div class="container" id="configs">
   <table class="responsive-table">
     <thead>
       <tr>
-        <th>Dataset</th>
+        <th>Configuration</th>
         <th>Criba</th>
-        <th>Limit of Features</th>
-        <th>Pearson base</th>
-        <th>OneHotEncoder</th>
-        <th>Categorical Features</th>
+        <th>Threshold</th>
+        <th>Top Features</th>
         <th>Launchers</th>
         <th>Results</th>
       </tr>
@@ -75,12 +72,10 @@
 
       {% for row in entries %}
       <tr>
-        <td>{{row.dataset}}</td>
+        <td>{{row.config_id}}</td>
         <td>{{row.criba}}</td>
-        <td>{{row.limit}}</td>
-        <td>{{row.pearson_base}}</td>
-        <td>{{row.ohe}}</td>
-        <td>{{row.categorical_features}}</td>
+        <td>{{row.threshold}}</td>
+        <td>{{row.top_feat}}</td>
         <td>{{row.launchers}}</td>
         <td><a href="/result?config='{{row._id}}'">Show</a></td>
       </tr>
