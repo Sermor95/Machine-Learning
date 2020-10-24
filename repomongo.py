@@ -1,5 +1,4 @@
 from pymongo import MongoClient
-from pprint import pprint
 from config import Config
 from bson import ObjectId
 import json
