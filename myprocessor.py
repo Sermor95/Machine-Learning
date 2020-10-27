@@ -19,9 +19,9 @@ class FeatureSelection:
         # self.debug_info = []
 
 
-
-
     def procesa(self):
+
+
 
         results = []
         # CARGA DE DATOS
@@ -40,13 +40,13 @@ class FeatureSelection:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
         # CRIBA
-        criba = criba_Pearson(X_train,y_train,0.75,'pearson')
-        features_to_drop = criba[0]
+        criba = criba_Pearson(X_train,y_train,self.criba,'pearson')
+
         
-        X_train_new = X_train.drop(features_to_drop,axis=1)
+        X_train_new = X_train[criba[0]]
 
         features_without_criba = [list(X_train.columns),criba[1]]
-        features_with_criba = [list(list(set(X_train.columns) - set(features_to_drop))),criba[1]]
+        features_with_criba = [list(X_train_new.columns),criba[1]]
         results.append(get_result('Criba Person', features_without_criba, False, X_train, X_test, y_train, y_test))
         results.append(get_result('Criba Person', features_with_criba, True, X_train, X_test, y_train, y_test))
 

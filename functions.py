@@ -37,8 +37,9 @@ def criba_Pearson(X,y,criba,method_name):
                 worst_feature = get_worst_feature(i,j,X,y,method_name)
                 droped_columns.add(X.columns[worst_feature])
                 # debug_info.append(' - {0}/{1} => {2} //--// {0}/y => {3} // {1}/y => {4} //--// worst feature => {5}'.format(X.columns[i],X.columns[j],round(corr.iloc[i,j],4),pearson_corr(X.iloc[:,i],y),pearson_corr(X.iloc[:,j],y),X.columns[worst_feature]))
-    
-    res.append(droped_columns)
+
+    X.drop(droped_columns, axis=1)
+    res.append(X.columns)
     end_time = time.monotonic()
     res.append(get_execution_time(start_time, end_time))
     # res.append(debug_info)
@@ -144,7 +145,7 @@ def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, 
     model_without_criba.fit(X_train_aux, y_train)
     y_pred_aux = model_without_criba.predict(X_test_aux)
     bal_accur = balanced_accuracy_score(y_pred_aux, y_test)
-    result = Result(method_name, criba, bal_accur, feature_selection[1], len(list(feature_selection[0]))).toJSON()
+    result = Result(method_name, criba, bal_accur, feature_selection[1], list(feature_selection[0])).toJSON()
     return result
 
 def get_execution_time(start_time, end_time):

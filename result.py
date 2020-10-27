@@ -9,7 +9,7 @@ class Result:
         self.criba = criba
         self.accuracy = accuracy
         self.time = time
-        self.features = features
+        self.features = []
     
 
     def toJSON(self):

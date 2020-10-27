@@ -42,10 +42,20 @@ def results():
 def feature_selection():
     try:
         json_request = request.get_json()
-        feat_selection = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['reduction'])
-        feat_selection.procesa()
+
+        config = find_one_config(json_request['dataset'], json_request['criba'], 0)
+        if config == None:
+            feat_selection_1 = FeatureSelection(json_request['dataset'], json_request['criba'], 0)
+            feat_selection_1.procesa()
+            save_feature_selection(feat_selection_1)
+
+        feat_selection_2 = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['reduction'])
+        feat_selection_2.procesa()
+        save_feature_selection(feat_selection_2)
+
+
         # output = ''.join(feat_selection.getResultados())
-        save_feature_selection(feat_selection)
+
     except Exception as e:
         # output = str(e)
         print(f'Procces fail: {e}')

@@ -4,7 +4,8 @@ from bson import ObjectId
 import json
 
 def get_db():
-    mongoDB = 'mongodb://192.168.0.14:27017/'
+
+    mongoDB = 'mongodb://192.168.1.249:27017/'
     client = MongoClient(mongoDB,
                     username='root',
                     password='example')
@@ -21,7 +22,7 @@ def save_feature_selection(feature_selection):
     db = get_db()
     posts_result = db.fs_result
     try:
-        config = find_one_config(feature_selection.dataset, feature_selection.criba, feature_selection.threshold, feature_selection.top_feat)
+        config = find_one_config(feature_selection.dataset, feature_selection.criba, feature_selection.reduction)
         # Update RESULTS from CONFIG
         if config:
             launchers = config['launchers']+1
@@ -30,7 +31,7 @@ def save_feature_selection(feature_selection):
         # save new CONFIG
         else:
             launchers = 1
-            config = Config(feature_selection.dataset, feature_selection.criba, feature_selection.threshold, feature_selection.top_feat)
+            config = Config(feature_selection.dataset, feature_selection.criba, feature_selection.reduction)
             config.launchers = launchers
             inserted = save_config(config)
             fs_id = inserted.inserted_id
@@ -73,11 +74,11 @@ def find_config_by_id(id):
         print(f'Find One fail: {e}')
     return res
 
-def find_one_config(dataset, criba, threshold, top_feat):
+def find_one_config(dataset, criba, reduction):
     db = get_db()
     posts = db.fs_config
     try:
-        res = posts.find_one({"dataset": dataset, "criba": criba, "threshold": threshold, "top_feat": top_feat})
+        res = posts.find_one({"dataset": dataset, "criba": criba, "reduction": reduction})
         pass
     except Exception as e:
         print(f'Find One fail: {e}')
