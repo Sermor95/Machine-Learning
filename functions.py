@@ -80,23 +80,23 @@ def filter_mutual_info_select(X,y,top_feat):
 
 # DONE los wrapper methods deben devolver subjconjuntos de features por top_feat
 def wrapper_forward_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=False,verbose=0,cv=5,n_jobs=-1,scoring='r2')
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='r2')
     model_forward.fit(X,y)
     # return list(model_forward.k_feature_names_)
     return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
 
 def wrapper_backward_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=False,verbose=0,cv=5,n_jobs=-1,scoring='r2')
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='r2')
     model_forward.fit(X,y)
     return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
 
 def wrapper_forward_floating_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=True,verbose=0,cv=5,n_jobs=-1,scoring='r2')
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='r2')
     model_forward.fit(X,y)
     return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
 
 def wrapper_backward_floating_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=True,verbose=0,cv=5,n_jobs=-1,scoring='r2')
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='r2')
     model_forward.fit(X,y)
     return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
 
@@ -204,6 +204,9 @@ def get_top_feat(num_columns, reduction):
 
 def get_top_feat_by_config(config_id,method,criba,n):
     return list(get_results_by_configid_method_criba(config_id,method,criba))[0]['features'][:n]
+
+def get_top_feat_by_config_sequential(config_id,method,criba,n):
+    return list(get_results_by_configid_method_criba(config_id,method,criba))[0]['features'][n-1]
 
 def procces_results(features, X_train, X_test, y_train, y_test):
     results = []
