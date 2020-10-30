@@ -140,23 +140,23 @@ class FeatureSelection:
         print('2/8')
 
         # WRAPPER: FORWARD SELECTION
-        best_features_forward_woc = (get_top_feat_by_config_sequential(self.id,'Forward Selection',False,top_feat),None)
-        best_features_forward_wc = (get_top_feat_by_config_sequential(self.id,'Forward Selection',True,top_feat),None)
+        best_features_forward_woc = (get_top_feat_by_config(self.id,'Forward Selection',False,top_feat),None)
+        best_features_forward_wc = (get_top_feat_by_config(self.id,'Forward Selection',True,top_feat),None)
         print('3/8')
 
         # WRAPPER: BACKWARD SELECTION
-        best_features_backward_woc = (get_top_feat_by_config_sequential(self.id,'Backward Selection',False,top_feat),None)
-        best_features_backward_wc = (get_top_feat_by_config_sequential(self.id,'Backward Selection',True,top_feat),None)
+        best_features_backward_woc = (get_top_feat_by_config(self.id,'Backward Selection',False,top_feat),None)
+        best_features_backward_wc = (get_top_feat_by_config(self.id,'Backward Selection',True,top_feat),None)
         print('4/8')
 
         # WRAPPER: FORWARD FLOATING SELECTION
-        best_features_forward_float_woc = (get_top_feat_by_config_sequential(self.id,'Forward Floating Selection',False,top_feat),None)
-        best_features_forward_float_wc = (get_top_feat_by_config_sequential(self.id,'Forward Floating Selection',True,top_feat),None)
+        best_features_forward_float_woc = (get_top_feat_by_config(self.id,'Forward Floating Selection',False,top_feat),None)
+        best_features_forward_float_wc = (get_top_feat_by_config(self.id,'Forward Floating Selection',True,top_feat),None)
         print('5/8')
 
         # WRAPPER: BACKWARD FLOATING SELECTION
-        best_features_backward_float_woc = (get_top_feat_by_config_sequential(self.id,'Backward Floating Selection',False,top_feat),None)
-        best_features_backward_float_wc = (get_top_feat_by_config_sequential(self.id,'Backward Floating Selection',True,top_feat),None)
+        best_features_backward_float_woc = (get_top_feat_by_config(self.id,'Backward Floating Selection',False,top_feat),None)
+        best_features_backward_float_wc = (get_top_feat_by_config(self.id,'Backward Floating Selection',True,top_feat),None)
         print('6/8')
 
         # EMBEDDED: FEATURE IMPORTANCE

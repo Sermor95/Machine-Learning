@@ -53,7 +53,7 @@ def need_ohe(dataset, X):
         return False
 
 def apply_one_hot_encoding(X):
-    cat_feat_titanic = ['Embarked', 'Initial', 'Deck', 'Title']
+    cat_feat_titanic = []
     for col in cat_feat_titanic:
         ohe_col = pd.get_dummies(X[col], prefix=col)
         X = pd.concat([X,ohe_col], axis=1)
@@ -144,14 +144,19 @@ def feature_selection(method,X,y,n):
 
 def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, y_test):
 
-    X_train_aux = X_train[feature_selection[0]]
-    X_test_aux = X_test[feature_selection[0]]
+    if any(isinstance(x,tuple) and len(x)>1 for x in feature_selection[0]):
+        print('ha entrado')
+        X_train_aux = X_train
+        X_test_aux = X_test
+    else:
+        X_train_aux = X_train[feature_selection[0]]
+        X_test_aux = X_test[feature_selection[0]]
     
     model_without_criba = tree.DecisionTreeClassifier()
     model_without_criba.fit(X_train_aux, y_train)
     y_pred_aux = model_without_criba.predict(X_test_aux)
     bal_accur = balanced_accuracy_score(y_pred_aux, y_test)
-    result = Result(method_name, criba, bal_accur, feature_selection[1], list(feature_selection[0])).toJSON()
+    result = Result(method_name, criba, bal_accur, feature_selection[1], list(X_train_aux.columns)).toJSON()
     return result
 
 def get_execution_time(start_time, end_time):
@@ -206,7 +211,7 @@ def get_top_feat_by_config(config_id,method,criba,n):
     return list(get_results_by_configid_method_criba(config_id,method,criba))[0]['features'][:n]
 
 def get_top_feat_by_config_sequential(config_id,method,criba,n):
-    return list(get_results_by_configid_method_criba(config_id,method,criba))[0]['features'][n-1]
+    return list(get_results_by_configid_method_criba(config_id,method,criba))[n-1]
 
 def procces_results(features, X_train, X_test, y_train, y_test):
     results = []
