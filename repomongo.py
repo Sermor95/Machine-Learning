@@ -5,7 +5,7 @@ import json
 
 def get_db():
 
-    mongoDB = 'mongodb://192.168.1.249:27017/'
+    mongoDB = 'mongodb://192.168.0.20:27017/'
     client = MongoClient(mongoDB,
                     username='root',
                     password='example')
@@ -42,6 +42,7 @@ def save_feature_selection(feature_selection):
             res['launch'] = launchers
             results.append(res)
         posts_result.insert_many(results)
+        return fs_id
     except Exception as e:
         print(f'Save fail: {e}')
         pass
@@ -109,6 +110,16 @@ def count_result_by_config(config_id):
     db = get_db()
     posts_result = db.fs_result
     return posts_result.count({ "config_id": ObjectId(config_id)})/18
+
+def get_results_by_configid_method_criba(config_id,method,criba):
+    db = get_db()
+    posts = db.fs_result
+    try:
+        res = posts.find({"config_id": ObjectId(config_id), "method": method, "criba": criba})
+        pass
+    except Exception as e:
+        print(f'Find By method and criba fail: {e}')
+    return res
 
 def get_results_by_configid_method_criba(config_id,method,criba):
     db = get_db()

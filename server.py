@@ -46,11 +46,15 @@ def feature_selection():
         config = find_one_config(json_request['dataset'], json_request['criba'], 0)
         if config == None:
             feat_selection_1 = FeatureSelection(json_request['dataset'], json_request['criba'], 0)
-            feat_selection_1.procesa()
-            save_feature_selection(feat_selection_1)
+            feat_selection_1.procces_full()
+            conf_id = save_feature_selection(feat_selection_1)
+
+        else:
+            conf_id = config['_id']
 
         feat_selection_2 = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['reduction'])
-        feat_selection_2.procesa()
+        feat_selection_2.id = conf_id
+        feat_selection_2.procces_reduction()
         save_feature_selection(feat_selection_2)
 
 

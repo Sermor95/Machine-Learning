@@ -6,7 +6,7 @@ class Config:
         self.dataset = dataset
         self.config_id = ''
         self.criba = criba
-        self.reduction = self.reduction
+        self.reduction = reduction
         self.launchers = 0
 
     def toJSON(self):
