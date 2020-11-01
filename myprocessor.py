@@ -43,6 +43,7 @@ class FeatureSelection:
         top_feat_woc = get_top_feat(len(X.columns), self.reduction)
         top_feat_wc = get_top_feat(len(X_train_new.columns), self.reduction)
 
+        print('//---procces_full()---///---top_feat_woc -> {}, top_feat_wc -> {}'.format(top_feat_woc,top_feat_wc))
         features_without_criba = [list(X_train.columns),0.0]
         features_with_criba = [criba[0],criba[1]]
 
@@ -62,8 +63,8 @@ class FeatureSelection:
         print('3/8')
 
         # WRAPPER: BACKWARD SELECTION
-        best_features_backward_woc = feature_selection('backward', X_train, y_train, top_feat_woc)
-        best_features_backward_wc = feature_selection('backward', X_train_new, y_train, top_feat_wc)
+        best_features_backward_woc = feature_selection('backward', X_train, y_train, 1)
+        best_features_backward_wc = feature_selection('backward', X_train_new, y_train, 1)
         print('4/8')
 
         # WRAPPER: FORWARD FLOATING SELECTION
@@ -72,8 +73,8 @@ class FeatureSelection:
         print('5/8')
 
         # WRAPPER: BACKWARD FLOATING SELECTION
-        best_features_backward_float_woc = feature_selection('backward_floating', X_train, y_train, top_feat_woc)
-        best_features_backward_float_wc = feature_selection('backward_floating', X_train_new, y_train, top_feat_wc)
+        best_features_backward_float_woc = feature_selection('backward_floating', X_train, y_train, 1)
+        best_features_backward_float_wc = feature_selection('backward_floating', X_train_new, y_train, 1)
         print('6/8')
 
         # EMBEDDED: FEATURE IMPORTANCE
@@ -99,8 +100,8 @@ class FeatureSelection:
             'features_backward_wc': best_features_backward_wc,
             'features_forward_float_woc': best_features_forward_float_woc,
             'features_forward_float_wc': best_features_forward_float_wc,
-            'features_forward_float_woc': best_features_backward_float_woc,
-            'features_forward_float_wc': best_features_backward_float_wc,
+            'features_backward_float_woc': best_features_backward_float_woc,
+            'features_backward_float_wc': best_features_backward_float_wc,
             'features_importance_woc': best_features_importance_woc,
             'features_importance_wc': best_features_importance_wc,
             'features_rfe_woc': best_features_rfe_woc,
@@ -121,52 +122,55 @@ class FeatureSelection:
         if need_ohe(self.dataset, X):
             X = apply_one_hot_encoding(X)
 
-        top_feat = get_top_feat(len(X.columns), self.reduction)
-
         # SPLIT
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-        features_without_criba = (get_top_feat_by_config(self.id,'Criba Person',False,top_feat),None)
-        features_with_criba = (get_top_feat_by_config(self.id,'Criba Person',True,top_feat),None)
+        features_without_criba = (get_top_feat_by_config(self.id,'Criba Person',False,None,False),None)
+        features_with_criba = (get_top_feat_by_config(self.id,'Criba Person',True,None,False),None)
+
+        top_feat_woc = get_top_feat(len(X.columns), self.reduction)
+        top_feat_wc = get_top_feat(len(features_with_criba[0]), self.reduction)
+        print('//---procces_reduction()---///---top_feat_woc -> {}, top_feat_wc -> {}'.format(top_feat_woc, top_feat_wc))
+
 
         # FILTER: PEARSON CORRELATION
-        best_features_pearson_woc = (get_top_feat_by_config(self.id,'Person Correlation',False,top_feat),None)
-        best_features_pearson_wc = (get_top_feat_by_config(self.id,'Person Correlation',True,top_feat),None)
+        best_features_pearson_woc = (get_top_feat_by_config(self.id,'Person Correlation',False,top_feat_woc,False),None)
+        best_features_pearson_wc = (get_top_feat_by_config(self.id,'Person Correlation',True,top_feat_wc,False),None)
         print('1/8')
 
         # FILTER: MUTUAL INFORMATION
-        best_features_mutual_woc = (get_top_feat_by_config(self.id,'Mutual Information',False,top_feat),None)
-        best_features_mutual_wc = (get_top_feat_by_config(self.id,'Mutual Information',True,top_feat),None)
+        best_features_mutual_woc = (get_top_feat_by_config(self.id,'Mutual Information',False,top_feat_woc,False),None)
+        best_features_mutual_wc = (get_top_feat_by_config(self.id,'Mutual Information',True,top_feat_wc,False),None)
         print('2/8')
 
         # WRAPPER: FORWARD SELECTION
-        best_features_forward_woc = (get_top_feat_by_config(self.id,'Forward Selection',False,top_feat),None)
-        best_features_forward_wc = (get_top_feat_by_config(self.id,'Forward Selection',True,top_feat),None)
+        best_features_forward_woc = (get_top_feat_by_config(self.id,'Forward Selection',False,top_feat_woc,True),None)
+        best_features_forward_wc = (get_top_feat_by_config(self.id,'Forward Selection',True,top_feat_wc,True),None)
         print('3/8')
 
         # WRAPPER: BACKWARD SELECTION
-        best_features_backward_woc = (get_top_feat_by_config(self.id,'Backward Selection',False,top_feat),None)
-        best_features_backward_wc = (get_top_feat_by_config(self.id,'Backward Selection',True,top_feat),None)
+        best_features_backward_woc = (get_top_feat_by_config(self.id,'Backward Selection',False,top_feat_woc,True),None)
+        best_features_backward_wc = (get_top_feat_by_config(self.id,'Backward Selection',True,top_feat_wc,True),None)
         print('4/8')
 
         # WRAPPER: FORWARD FLOATING SELECTION
-        best_features_forward_float_woc = (get_top_feat_by_config(self.id,'Forward Floating Selection',False,top_feat),None)
-        best_features_forward_float_wc = (get_top_feat_by_config(self.id,'Forward Floating Selection',True,top_feat),None)
+        best_features_forward_float_woc = (get_top_feat_by_config(self.id,'Forward Floating Selection',False,top_feat_woc,True),None)
+        best_features_forward_float_wc = (get_top_feat_by_config(self.id,'Forward Floating Selection',True,top_feat_wc,True),None)
         print('5/8')
 
         # WRAPPER: BACKWARD FLOATING SELECTION
-        best_features_backward_float_woc = (get_top_feat_by_config(self.id,'Backward Floating Selection',False,top_feat),None)
-        best_features_backward_float_wc = (get_top_feat_by_config(self.id,'Backward Floating Selection',True,top_feat),None)
+        best_features_backward_float_woc = (get_top_feat_by_config(self.id,'Backward Floating Selection',False,top_feat_woc,True),None)
+        best_features_backward_float_wc = (get_top_feat_by_config(self.id,'Backward Floating Selection',True,top_feat_wc,True),None)
         print('6/8')
 
         # EMBEDDED: FEATURE IMPORTANCE
-        best_features_importance_woc = (get_top_feat_by_config(self.id,'Feature Importance',False,top_feat),None)
-        best_features_importance_wc = (get_top_feat_by_config(self.id,'Feature Importance',True,top_feat),None)
+        best_features_importance_woc = (get_top_feat_by_config(self.id,'Feature Importance',False,top_feat_woc,False),None)
+        best_features_importance_wc = (get_top_feat_by_config(self.id,'Feature Importance',True,top_feat_wc,False),None)
         print('7/8')
 
         # HYBRID: RFE
-        best_features_rfe_woc = (get_top_feat_by_config(self.id,'RFE',False,top_feat),None)
-        best_features_rfe_wc = (get_top_feat_by_config(self.id,'RFE',True,top_feat),None)
+        best_features_rfe_woc = (get_top_feat_by_config(self.id,'RFE',False,top_feat_woc,False),None)
+        best_features_rfe_wc = (get_top_feat_by_config(self.id,'RFE',True,top_feat_wc,False),None)
         print('8/8')
 
         features = {
@@ -182,8 +186,8 @@ class FeatureSelection:
             'features_backward_wc': best_features_backward_wc,
             'features_forward_float_woc': best_features_forward_float_woc,
             'features_forward_float_wc': best_features_forward_float_wc,
-            'features_forward_float_woc': best_features_backward_float_woc,
-            'features_forward_float_wc': best_features_backward_float_wc,
+            'features_backward_float_woc': best_features_backward_float_woc,
+            'features_backward_float_wc': best_features_backward_float_wc,
             'features_importance_woc': best_features_importance_woc,
             'features_importance_wc': best_features_importance_wc,
             'features_rfe_woc': best_features_rfe_woc,

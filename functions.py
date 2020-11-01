@@ -40,7 +40,7 @@ def criba_Pearson(X,y,criba,method_name):
                 # debug_info.append(' - {0}/{1} => {2} //--// {0}/y => {3} // {1}/y => {4} //--// worst feature => {5}'.format(X.columns[i],X.columns[j],round(corr.iloc[i,j],4),pearson_corr(X.iloc[:,i],y),pearson_corr(X.iloc[:,j],y),X.columns[worst_feature]))
 
     X = X.drop(droped_columns, axis=1)
-    res.append(X.columns)
+    res.append(list(X.columns))
     end_time = time.monotonic()
     res.append(get_execution_time(start_time, end_time))
     # res.append(debug_info)
@@ -53,7 +53,8 @@ def need_ohe(dataset, X):
         return False
 
 def apply_one_hot_encoding(X):
-    cat_feat_titanic = []
+    cat_feat_titanic = ['Embarked', 'Initial', 'Deck', 'Title']
+    # cat_feat_titanic = []
     for col in cat_feat_titanic:
         ohe_col = pd.get_dummies(X[col], prefix=col)
         X = pd.concat([X,ohe_col], axis=1)
@@ -76,7 +77,7 @@ def filter_mutual_info_select(X,y,top_feat):
     mi = list(enumerate(mutual_info_classif(X,y)))
     mi.sort(reverse=True, key=lambda x: x[1])
     f_best = list(map(lambda e: e[0], mi))
-    return X.columns[f_best[:int(top_feat)]]
+    return list(X.columns[f_best[:int(top_feat)]])
 
 # DONE los wrapper methods deben devolver subjconjuntos de features por top_feat
 def wrapper_forward_selection(X,y,n):
@@ -88,7 +89,9 @@ def wrapper_forward_selection(X,y,n):
 def wrapper_backward_selection(X,y,n):
     model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='r2')
     model_forward.fit(X,y)
-    return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res.sort(key=len)
+    return res
 
 def wrapper_forward_floating_selection(X,y,n):
     model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='r2')
@@ -98,7 +101,9 @@ def wrapper_forward_floating_selection(X,y,n):
 def wrapper_backward_floating_selection(X,y,n):
     model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='r2')
     model_forward.fit(X,y)
-    return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res.sort(key=len)
+    return res
 
 def embedded_feature_importance(X,y,n):
     model = RandomForestRegressor()
@@ -141,23 +146,6 @@ def feature_selection(method,X,y,n):
     end_time = time.monotonic()
     res.append(get_execution_time(start_time, end_time))
     return res
-
-def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, y_test):
-
-    if any(isinstance(x,tuple) and len(x)>1 for x in feature_selection[0]):
-        print('ha entrado')
-        X_train_aux = X_train
-        X_test_aux = X_test
-    else:
-        X_train_aux = X_train[feature_selection[0]]
-        X_test_aux = X_test[feature_selection[0]]
-    
-    model_without_criba = tree.DecisionTreeClassifier()
-    model_without_criba.fit(X_train_aux, y_train)
-    y_pred_aux = model_without_criba.predict(X_test_aux)
-    bal_accur = balanced_accuracy_score(y_pred_aux, y_test)
-    result = Result(method_name, criba, bal_accur, feature_selection[1], list(X_train_aux.columns)).toJSON()
-    return result
 
 def get_execution_time(start_time, end_time):
     diff = timedelta(seconds=end_time - start_time)
@@ -207,8 +195,14 @@ def get_avg_accuracy_by_configs(configs):
 def get_top_feat(num_columns, reduction):
     return int(num_columns-((num_columns*reduction)/100))
 
-def get_top_feat_by_config(config_id,method,criba,n):
-    return list(get_results_by_configid_method_criba(config_id,method,criba))[0]['features'][:n]
+def get_top_feat_by_config(config_id,method,criba,n,is_wraper):
+    if method == 'Criba Pearson':
+        return list(get_results_by_configid_method_criba(config_id, method, criba))[0]['features']
+    elif is_wraper:
+        return list(get_results_by_configid_method_criba(config_id, method, criba))[0]['features'][n]
+    else:
+        return list(get_results_by_configid_method_criba(config_id, method, criba))[0]['features'][:n]
+
 
 def get_top_feat_by_config_sequential(config_id,method,criba,n):
     return list(get_results_by_configid_method_criba(config_id,method,criba))[n-1]
@@ -277,3 +271,41 @@ def procces_results(features, X_train, X_test, y_train, y_test):
     print('8/8')
 
     return results
+
+
+def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, y_test):
+
+    if any(isinstance(x, tuple) and len(x) > 1 for x in feature_selection[0]):
+        print('ha entrado')
+        X_train_aux = X_train
+        X_test_aux = X_test
+    else:
+        X_train_aux = X_train[feature_selection[0]]
+        X_test_aux = X_test[feature_selection[0]]
+
+    model_without_criba = tree.DecisionTreeClassifier()
+    model_without_criba.fit(X_train_aux, y_train)
+    y_pred_aux = model_without_criba.predict(X_test_aux)
+    bal_accur = balanced_accuracy_score(y_pred_aux, y_test)
+    result = Result(method_name, criba, bal_accur, feature_selection[1], feature_selection[0]).toJSON()
+    return result
+
+def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, y_test):
+
+    if any(isinstance(x, tuple) and len(x) > 1 for x in feature_selection[0]):
+        print('ha entrado')
+        X_train_aux = X_train
+        X_test_aux = X_test
+    else:
+        X_train_aux = X_train[feature_selection[0]]
+        X_test_aux = X_test[feature_selection[0]]
+
+    model = tree.DecisionTreeClassifier()
+    model.fit(X_train_aux, y_train)
+    y_pred_aux = model.predict(X_test_aux)
+    bal_accur = balanced_accuracy_score(y_pred_aux, y_test)
+    if feature_selection[1] == None:
+        result = Result(method_name, criba, bal_accur, feature_selection[1], len(feature_selection[0])).toJSON()
+    else:
+        result = Result(method_name, criba, bal_accur, feature_selection[1], feature_selection[0]).toJSON()
+    return result

@@ -3,6 +3,8 @@ from bson.json_util import loads
 from myprocessor import FeatureSelection
 from functions import *
 from repomongo import *
+import traceback
+import sys
 
 app = Flask(__name__)
 
@@ -63,6 +65,7 @@ def feature_selection():
     except Exception as e:
         # output = str(e)
         print(f'Procces fail: {e}')
+        traceback.print_exc()
     return homepage()
 
 @app.route('/analyze-results', methods=["GET"])
