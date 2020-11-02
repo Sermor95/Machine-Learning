@@ -11,20 +11,6 @@ from datetime import timedelta
 from repomongo import *
 import math
 
-def get_methods():
-    return ['Criba Person', 'Person Correlation', 'Mutual Information', 'Forward Selection', 'Backward Selection', 'Forward Floating Selection', 'Backward Floating Selection', 'Feature Importance', 'RFE']
-
-def pearson_corr(x, y):
-    return abs(round(x.corr(y),6))
-
-def get_worst_feature(feature_i1,feature_i2,X_train,y_train,method_name):
-    feature_y = y_train
-    feature_1 = X_train.iloc[:,feature_i1]
-    feature_2 = X_train.iloc[:,feature_i2]   
-    corr1 = pearson_corr(feature_1,feature_y)
-    corr2 = pearson_corr(feature_2,feature_y)
-    return feature_i1 if corr1 < corr2 else feature_i2
-
 def criba_Pearson(X,y,criba,method_name):
     start_time = time.monotonic()
     res = []
@@ -45,21 +31,6 @@ def criba_Pearson(X,y,criba,method_name):
     res.append(get_execution_time(start_time, end_time))
     # res.append(debug_info)
     return res
-
-def need_ohe(dataset, X):
-    if dataset == 'titanic':
-        return True
-    else:
-        return False
-
-def apply_one_hot_encoding(X):
-    cat_feat_titanic = ['Embarked', 'Initial', 'Deck', 'Title']
-    # cat_feat_titanic = []
-    for col in cat_feat_titanic:
-        ohe_col = pd.get_dummies(X[col], prefix=col)
-        X = pd.concat([X,ohe_col], axis=1)
-        X = X.drop([col], axis=1) 
-    return X
 
 def filter_pearson_correlation(X,y,top_feat):
     # Done Eliminar donde los values que sean nan -> https://stackoverflow.com/questions/52466844/pandas-corr-returning-nan-too-often
@@ -147,66 +118,6 @@ def feature_selection(method,X,y,n):
     res.append(get_execution_time(start_time, end_time))
     return res
 
-def get_execution_time(start_time, end_time):
-    diff = timedelta(seconds=end_time - start_time)
-    return diff.total_seconds()
-
-def get_avg_accuracy_by_configs(configs):
-    methods = get_methods()
-    configs_custom_woc = []
-    configs_custom_wc = []
-    for c in configs:
-        results_woc = []
-        results_wc = []
-        for m in methods:
-            avg_woc = get_avg_results_by_configid_method_criba(c['_id'], m, False)
-            results_woc.append(avg_woc)
-
-            avg_wc = get_avg_results_by_configid_method_criba(c['_id'], m, True)
-            results_wc.append(avg_wc)
-        config_woc = []
-        config_name = c['config_id']+'_woc'
-        config_woc.append(config_name)
-        config_woc = config_woc+results_woc
-        configs_custom_woc.append(config_woc)
-
-        config_wc = []
-        config_name = c['config_id'] + '_wc'
-        config_wc.append(config_name)
-        config_wc = config_wc + results_wc
-        configs_custom_wc.append(config_wc)
-
-
-    categories = ['methods']
-    for m in methods:
-        categories.append(m)
-    series = [categories]
-    for i in range(len(configs_custom_woc)):
-        series.append(configs_custom_woc[i])
-        series.append(configs_custom_wc[i])
-
-    res = {
-        'categories': get_methods(),
-        'series': series
-    }
-    return res
-
-
-def get_top_feat(num_columns, reduction):
-    return int(num_columns-((num_columns*reduction)/100))
-
-def get_top_feat_by_config(config_id,method,criba,n,is_wraper):
-    if method == 'Criba Pearson':
-        return list(get_results_by_configid_method_criba(config_id, method, criba))[0]['features']
-    elif is_wraper:
-        return list(get_results_by_configid_method_criba(config_id, method, criba))[0]['features'][n]
-    else:
-        return list(get_results_by_configid_method_criba(config_id, method, criba))[0]['features'][:n]
-
-
-def get_top_feat_by_config_sequential(config_id,method,criba,n):
-    return list(get_results_by_configid_method_criba(config_id,method,criba))[n-1]
-
 def procces_results(features, X_train, X_test, y_train, y_test):
     results = []
     results.append(get_result('Criba Person', features['features_without_criba'], False, X_train, X_test, y_train, y_test))
@@ -244,6 +155,7 @@ def procces_results(features, X_train, X_test, y_train, y_test):
     results.append(
         get_result('Forward Floating Selection', features['features_forward_float_woc'], False, X_train, X_test, y_train,
                    y_test))
+
     results.append(
         get_result('Forward Floating Selection', features['features_forward_float_wc'], True, X_train, X_test, y_train,
                    y_test))
@@ -272,24 +184,6 @@ def procces_results(features, X_train, X_test, y_train, y_test):
 
     return results
 
-
-def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, y_test):
-
-    if any(isinstance(x, tuple) and len(x) > 1 for x in feature_selection[0]):
-        print('ha entrado')
-        X_train_aux = X_train
-        X_test_aux = X_test
-    else:
-        X_train_aux = X_train[feature_selection[0]]
-        X_test_aux = X_test[feature_selection[0]]
-
-    model_without_criba = tree.DecisionTreeClassifier()
-    model_without_criba.fit(X_train_aux, y_train)
-    y_pred_aux = model_without_criba.predict(X_test_aux)
-    bal_accur = balanced_accuracy_score(y_pred_aux, y_test)
-    result = Result(method_name, criba, bal_accur, feature_selection[1], feature_selection[0]).toJSON()
-    return result
-
 def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, y_test):
 
     if any(isinstance(x, tuple) and len(x) > 1 for x in feature_selection[0]):
@@ -309,3 +203,92 @@ def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, 
     else:
         result = Result(method_name, criba, bal_accur, feature_selection[1], feature_selection[0]).toJSON()
     return result
+
+
+def get_methods():
+    return ['Criba Person', 'Person Correlation', 'Mutual Information', 'Forward Selection', 'Backward Selection', 'Forward Floating Selection', 'Backward Floating Selection', 'Feature Importance', 'RFE']
+
+def need_ohe(dataset, X):
+    if dataset == 'titanic':
+        return True
+    else:
+        return False
+
+def apply_one_hot_encoding(X):
+    cat_feat_titanic = ['Embarked', 'Initial', 'Deck', 'Title']
+    # cat_feat_titanic = []
+    for col in cat_feat_titanic:
+        ohe_col = pd.get_dummies(X[col], prefix=col)
+        X = pd.concat([X,ohe_col], axis=1)
+        X = X.drop([col], axis=1)
+    return X
+
+def pearson_corr(x, y):
+    return abs(round(x.corr(y),6))
+
+def get_worst_feature(feature_i1,feature_i2,X_train,y_train,method_name):
+    feature_y = y_train
+    feature_1 = X_train.iloc[:,feature_i1]
+    feature_2 = X_train.iloc[:,feature_i2]
+    corr1 = pearson_corr(feature_1,feature_y)
+    corr2 = pearson_corr(feature_2,feature_y)
+    return feature_i1 if corr1 < corr2 else feature_i2
+
+def get_execution_time(start_time, end_time):
+    diff = timedelta(seconds=end_time - start_time)
+    return diff.total_seconds()
+
+def get_avg_accuracy_by_configs(configs):
+    methods = get_methods()
+    configs_custom_woc = []
+    configs_custom_wc = []
+    for c in configs:
+        results_woc = []
+        results_wc = []
+        for m in methods:
+            avg_woc = get_avg_results_by_configid_method_criba(c['_id'], m, False)
+            results_woc.append(avg_woc)
+
+            avg_wc = get_avg_results_by_configid_method_criba(c['_id'], m, True)
+            results_wc.append(avg_wc)
+        config_woc = []
+        config_name = c['config_id']+'_woc'
+        config_woc.append(config_name)
+        config_woc = config_woc+results_woc
+        configs_custom_woc.append(config_woc)
+
+        config_wc = []
+        config_name = c['config_id'] + '_wc'
+        config_wc.append(config_name)
+        config_wc = config_wc + results_wc
+        configs_custom_wc.append(config_wc)
+    categories = ['methods']
+    for m in methods:
+        categories.append(m)
+    series = [categories]
+    for i in range(len(configs_custom_woc)):
+        series.append(configs_custom_woc[i])
+        series.append(configs_custom_wc[i])
+
+    res = {
+        'categories': get_methods(),
+        'series': series
+    }
+    return res
+
+
+def get_top_feat(num_columns, reduction):
+    return int(num_columns-((num_columns*reduction)/100))
+
+def get_top_feat_by_config(config_id,method,criba,n,is_wraper):
+    if method == 'Criba Pearson':
+        return list(get_results_by_configid_method_criba(config_id, method, criba))[0]['features']
+    elif is_wraper:
+        return list(get_results_by_configid_method_criba(config_id, method, criba))[0]['features'][n-1]
+    else:
+        return list(get_results_by_configid_method_criba(config_id, method, criba))[0]['features'][:n]
+
+
+def get_top_feat_by_config_sequential(config_id,method,criba,n):
+    return list(get_results_by_configid_method_criba(config_id,method,criba))[n-1]
+
