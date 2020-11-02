@@ -15,8 +15,7 @@
             <h4>Configuration</h4>
             <label for="dataset">Dataset</label><input id="dataset" type="text">
             <label for="criba">Criba</label><input id="criba" type="text">
-            <label for="threshold">Threshold</label><input id="threshold" type="text">
-            <label for="top-feat">Top Features</label><input id="top-feat" type="text">
+            <label for="reduction">Reduction</label><input id="reduction" type="text">
         </div>
         <div class="modal-footer">
           <a href="#!" class="modal-close btn waves-effect waves-light red lighten-2">Cancel</a>
@@ -38,7 +37,7 @@
               <select id="select-dataset">
                 <option value="" disabled selected>Choose your dataset</option>
                 <option value="titanic">Titanic</option>
-                <option value="cancer">Cancer</option>
+                <option value="BreastCancerDataset">Breast Cancer</option>
               </select>
               <label>Dataset</label>
             </div>
@@ -62,8 +61,7 @@
       <tr>
         <th>Configuration</th>
         <th>Criba</th>
-        <th>Threshold</th>
-        <th>Top Features</th>
+        <th>Reduction</th>
         <th>Launchers</th>
         <th>Results</th>
       </tr>
@@ -74,8 +72,7 @@
       <tr>
         <td>{{row.config_id}}</td>
         <td>{{row.criba}}</td>
-        <td>{{row.threshold}}</td>
-        <td>{{row.top_feat}}</td>
+        <td>{{row.reduction}}</td>
         <td>{{row.launchers}}</td>
         <td><a href="/result?config='{{row._id}}'">Show</a></td>
       </tr>
