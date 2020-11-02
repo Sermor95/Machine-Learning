@@ -24,7 +24,8 @@ class FeatureSelection:
     def procces_full(self):
 
         # CARGA DE DATOS
-        url='C:/Users/Sergio/Google Drive/Datasets/'+self.dataset+'.csv'
+        # 'https://github.com/Sermor95/Machine-Learning/blob/master/datasets/'
+        url='https://github.com/Sermor95/Machine-Learning/blob/master/datasets/'+self.dataset+'.csv'
         data = pd.read_csv(url)
         X = data.iloc[:,:-1]
         y = data.iloc[:,-1]
@@ -113,7 +114,7 @@ class FeatureSelection:
     def procces_reduction(self):
 
         # CARGA DE DATOS
-        url='C:/Users/Sergio/Google Drive/Datasets/'+self.dataset+'.csv'
+        url='https://github.com/Sermor95/Machine-Learning/blob/master/datasets/'+self.dataset+'.csv'
         data = pd.read_csv(url)
         X = data.iloc[:,:-1]
         y = data.iloc[:,-1]

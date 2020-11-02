@@ -4,8 +4,8 @@ from bson import ObjectId
 import json
 
 def get_db():
-
-    mongoDB = 'mongodb://192.168.0.20:27017/'
+    # mongoDB = 'mongodb://localhost:27017/'
+    mongoDB = 'mongodb://machine-learning_web_1:27017/'
     client = MongoClient(mongoDB,
                     username='root',
                     password='example')
