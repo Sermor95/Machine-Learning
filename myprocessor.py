@@ -25,7 +25,7 @@ class FeatureSelection:
 
         # CARGA DE DATOS
         # 'https://github.com/Sermor95/Machine-Learning/blob/master/datasets/'
-        url='https://github.com/Sermor95/Machine-Learning/blob/master/datasets/'+self.dataset+'.csv'
+        url='https://raw.githubusercontent.com/Sermor95/Machine-Learning/master/datasets/'+self.dataset+'.csv'
         data = pd.read_csv(url)
         X = data.iloc[:,:-1]
         y = data.iloc[:,-1]
@@ -114,7 +114,7 @@ class FeatureSelection:
     def procces_reduction(self):
 
         # CARGA DE DATOS
-        url='https://github.com/Sermor95/Machine-Learning/blob/master/datasets/'+self.dataset+'.csv'
+        url='https://raw.githubusercontent.com/Sermor95/Machine-Learning/master/datasets/'+self.dataset+'.csv'
         data = pd.read_csv(url)
         X = data.iloc[:,:-1]
         y = data.iloc[:,-1]

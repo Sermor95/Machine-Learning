@@ -5,7 +5,7 @@ import json
 
 def get_db():
     # mongoDB = 'mongodb://localhost:27017/'
-    mongoDB = 'mongodb://machine-learning_web_1:27017/'
+    mongoDB = 'mongodb://machine-learning_mongo_1/'
     client = MongoClient(mongoDB,
                     username='root',
                     password='example')
