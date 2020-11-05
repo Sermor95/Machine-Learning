@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+    <link rel="shortcut icon" href="/static/images/favicon.ico"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
     <title>FEATURE SELECTION</title>
@@ -8,11 +10,15 @@
     <!--  Scripts-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
     <!-- CSS  -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.2/nouislider.css" integrity="sha512-30YMvFlZRwPH3TcDlPWZofkzGwIwDAKshEue1qWet2yWEQ4Y/X+WnV1aTuNldE3Hbpcl5Zz4PxoXJKMMQvBHGQ==" crossorigin="anonymous" />
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.2/nouislider.js" integrity="sha512-7HbjBI4ryzTy38QYyR/22oizWe+Bsd32ahxh8GMBzCkSV30rs0iqumNLfs2WCWYm1ReTD7Jn5K17kroQJBlm5g==" crossorigin="anonymous"></script>
 
 
     <!--    HIGHCHARTS-->
@@ -26,31 +32,52 @@
 </head>
 
 <body>
-    <nav class="light-blue lighten-1" role="navigation">
-        <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Logo</a>
+    <ul id="dropdown1" class="dropdown-content">
+      <li><a href="/">Feature Selection</a></li>
+    </ul>
+    <nav class="blue-grey darken-4" role="navigation">
+        <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo align-left"><img class="circle" src="static/images/favicon.ico"></a>
           <ul class="right hide-on-med-and-down">
-            <li><a href="#">Navbar Link</a></li>
+            <li><a class="dropdown-trigger" href="#!" data-target="dropdown1">Machine Learning<i class="material-icons right">arrow_drop_down</i></a></li>
           </ul>
 
-          <ul id="nav-mobile" class="sidenav">
-            <li><a href="#">Navbar Link</a></li>
-          </ul>
-          <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+<!--          <ul id="nav-mobile" class="sidenav">-->
+<!--            <li><a href="#">Navbar Link</a></li>-->
+<!--          </ul>-->
+<!--          <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>-->
         </div>
     </nav>
-    <div class="container">
+    <ul id="slide-out" class="sidenav">
+        <li><div class="user-view">
+          <div class="background">
+<!--            <img src="static/images/backgroundMenu.jpg">-->
+          </div>
+          <a href="#user"><img class="circle" src="static/images/favicon.ico"></a>
+          <a href="#name"><span class="black-text name">Sergio Morales</span></a>
+          <a href="#email"><span class="black-text email">sermor95@gmail.com</span></a>
+        </div></li>
+        <li><a href="https://www.linkedin.com/in/sergio-morales-moreno/">LinkedIn</a></li>
+        <li><a href="https://github.com/Sermor95">Github</a></li>
+<!--        <li><div class="divider"></div></li>-->
+<!--        <li><a class="subheader">Subheader</a></li>-->
+<!--        <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>-->
+    </ul>
+    <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+    <div class="container" id="">
         {% block content %}{% endblock %}
     </div>
     <br><br><br><br><br>
+    <script src="{{url_for('static',filename='js/base.js')}}"></script>
     {% block script %}{% endblock %}
 </body>
 
-<footer class="page-footer orange" style="margin-top: 50%;position:fixed;bottom:0;left:0;width:100%;">
+<footer class="page-footer blue-grey darken-3" style="margin-top: 50%;position:fixed;bottom:0;left:0;width:100%;">
     <div class="footer-copyright">
-        <div class="container">
+        <div class="container" id="body">
             Made by <a class="orange-text text-lighten-3" href="http://materializecss.com">Sergio Morales</a>
         </div>
     </div>
 </footer>
+
 </html>
 
