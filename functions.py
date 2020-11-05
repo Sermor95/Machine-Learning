@@ -193,7 +193,7 @@ def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, 
         X_train_aux = X_train[feature_selection[0]]
         X_test_aux = X_test[feature_selection[0]]
 
-    model = get
+    model = tree.DecisionTreeClassifier()
     model.fit(X_train_aux, y_train)
     y_pred_aux = model.predict(X_test_aux)
     bal_accur = balanced_accuracy_score(y_pred_aux, y_test)
