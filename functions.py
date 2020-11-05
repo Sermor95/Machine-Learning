@@ -52,25 +52,25 @@ def filter_mutual_info_select(X,y,top_feat):
 
 # DONE los wrapper methods deben devolver subjconjuntos de features por top_feat
 def wrapper_forward_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='r2')
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     # return list(model_forward.k_feature_names_)
     return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
 
 def wrapper_backward_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='r2')
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
     res.sort(key=len)
     return res
 
 def wrapper_forward_floating_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='r2')
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
 
 def wrapper_backward_floating_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='r2')
+    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
     res.sort(key=len)
@@ -128,28 +128,28 @@ def procces_results(features, X_train, X_test, y_train, y_test):
         get_result('Person Correlation', features['features_pearson_woc'], False, X_train, X_test, y_train, y_test))
     results.append(
         get_result('Person Correlation', features['features_pearson_wc'], True, X_train, X_test, y_train, y_test))
-    print('1/8')
+
 
     # FILTER: MUTUAL INFORMATION
     results.append(
         get_result('Mutual Information', features['features_mutual_woc'], False, X_train, X_test, y_train, y_test))
     results.append(
         get_result('Mutual Information', features['features_mutual_wc'], True, X_train, X_test, y_train, y_test))
-    print('2/8')
+
 
     # WRAPPER: FORWARD SELECTION
     results.append(
         get_result('Forward Selection', features['features_forward_woc'], False, X_train, X_test, y_train, y_test))
     results.append(
         get_result('Forward Selection', features['features_forward_wc'], True, X_train, X_test, y_train, y_test))
-    print('3/8')
+
 
     # WRAPPER: BACKWARD SELECTION
     results.append(
         get_result('Backward Selection', features['features_backward_woc'], False, X_train, X_test, y_train, y_test))
     results.append(
         get_result('Backward Selection', features['features_backward_wc'], True, X_train, X_test, y_train, y_test))
-    print('4/8')
+
 
     # WRAPPER: FORWARD FLOATING SELECTION
     results.append(
@@ -159,7 +159,7 @@ def procces_results(features, X_train, X_test, y_train, y_test):
     results.append(
         get_result('Forward Floating Selection', features['features_forward_float_wc'], True, X_train, X_test, y_train,
                    y_test))
-    print('5/8')
+
 
     # WRAPPER: BACKWARD FLOATING SELECTION
     results.append(
@@ -168,33 +168,32 @@ def procces_results(features, X_train, X_test, y_train, y_test):
     results.append(
         get_result('Backward Floating Selection', features['features_forward_float_wc'], True, X_train, X_test, y_train,
                    y_test))
-    print('6/8')
+
 
     # EMBEDDED: FEATURE IMPORTANCE
     results.append(
         get_result('Feature Importance', features['features_importance_woc'], False, X_train, X_test, y_train, y_test))
     results.append(
         get_result('Feature Importance', features['features_importance_wc'], True, X_train, X_test, y_train, y_test))
-    print('7/8')
+
 
     # HYBRID: RFE
     results.append(get_result('RFE', features['features_rfe_woc'], False, X_train, X_test, y_train, y_test))
     results.append(get_result('RFE', features['features_rfe_wc'], True, X_train, X_test, y_train, y_test))
-    print('8/8')
+
 
     return results
 
 def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, y_test):
 
     if any(isinstance(x, tuple) and len(x) > 1 for x in feature_selection[0]):
-        print('ha entrado')
         X_train_aux = X_train
         X_test_aux = X_test
     else:
         X_train_aux = X_train[feature_selection[0]]
         X_test_aux = X_test[feature_selection[0]]
 
-    model = tree.DecisionTreeClassifier()
+    model = get
     model.fit(X_train_aux, y_train)
     y_pred_aux = model.predict(X_test_aux)
     bal_accur = balanced_accuracy_score(y_pred_aux, y_test)
@@ -204,7 +203,8 @@ def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, 
         result = Result(method_name, criba, bal_accur, feature_selection[1], feature_selection[0]).toJSON()
     return result
 
-
+def get_datasets():
+    return ['titanic', 'BreastCancerDataset']
 def get_methods():
     return ['Criba Person', 'Person Correlation', 'Mutual Information', 'Forward Selection', 'Backward Selection', 'Forward Floating Selection', 'Backward Floating Selection', 'Feature Importance', 'RFE']
 
@@ -292,3 +292,14 @@ def get_top_feat_by_config(config_id,method,criba,n,is_wraper):
 def get_top_feat_by_config_sequential(config_id,method,criba,n):
     return list(get_results_by_configid_method_criba(config_id,method,criba))[n-1]
 
+def reset_database():
+    configs = []
+    for dataset in get_datasets():
+        configs = find_cofigs_base(dataset, 0)
+        if configs is not None:
+            for config in configs:
+                configs.append(config)
+
+    delete_configs()
+    delete_results()
+    insert_configs(configs)

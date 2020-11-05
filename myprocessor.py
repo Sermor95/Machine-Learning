@@ -8,6 +8,7 @@ from repomongo import *
 from functions import *
 from repomongo import *
 
+from util import *
 
 
 class FeatureSelection:
@@ -44,49 +45,50 @@ class FeatureSelection:
         top_feat_woc = get_top_feat(len(X.columns), self.reduction)
         top_feat_wc = get_top_feat(len(X_train_new.columns), self.reduction)
 
-        print('//---procces_full()---///---top_feat_woc -> {}, top_feat_wc -> {}'.format(top_feat_woc,top_feat_wc))
+        logging_info(f'procces_full()---top_feat_woc', top_feat_woc)
+        logging_info(f'procces_full()---top_feat_wc', top_feat_wc)
         features_without_criba = [list(X_train.columns),0.0]
         features_with_criba = [criba[0],criba[1]]
 
         # FILTER: PEARSON CORRELATION
         best_features_pearson_woc = feature_selection('pearson',X_train, y_train,top_feat_woc)
         best_features_pearson_wc = feature_selection('pearson',X_train_new, y_train,top_feat_wc)
-        print('1/8')
+        logging_info('procces_full()','1/8')
 
         # FILTER: MUTUAL INFORMATION
         best_features_mutual_woc = feature_selection('mutual_information', X_train, y_train, top_feat_woc)
         best_features_mutual_wc = feature_selection('mutual_information', X_train_new, y_train, top_feat_wc)
-        print('2/8')
+        logging_info('procces_full()','2/8')
 
         # WRAPPER: FORWARD SELECTION
         best_features_forward_woc = feature_selection('forward',X_train, y_train,top_feat_woc)
         best_features_forward_wc = feature_selection('forward',X_train_new,y_train,top_feat_wc)
-        print('3/8')
+        logging_info('procces_full()','3/8')
 
         # WRAPPER: BACKWARD SELECTION
         best_features_backward_woc = feature_selection('backward', X_train, y_train, 1)
         best_features_backward_wc = feature_selection('backward', X_train_new, y_train, 1)
-        print('4/8')
+        logging_info('procces_full()','4/8')
 
         # WRAPPER: FORWARD FLOATING SELECTION
         best_features_forward_float_woc = feature_selection('forward_floating', X_train, y_train, top_feat_woc)
         best_features_forward_float_wc = feature_selection('forward_floating', X_train_new, y_train, top_feat_wc)
-        print('5/8')
+        logging_info('procces_full()','5/8')
 
         # WRAPPER: BACKWARD FLOATING SELECTION
         best_features_backward_float_woc = feature_selection('backward_floating', X_train, y_train, 1)
         best_features_backward_float_wc = feature_selection('backward_floating', X_train_new, y_train, 1)
-        print('6/8')
+        logging_info('procces_full()','6/8')
 
         # EMBEDDED: FEATURE IMPORTANCE
         best_features_importance_woc = feature_selection('feature_importance',X_train, y_train,top_feat_woc)
         best_features_importance_wc = feature_selection('feature_importance',X_train_new,y_train,top_feat_wc)
-        print('7/8')
+        logging_info('procces_full()','7/8')
 
         # HYBRID: RFE
         best_features_rfe_woc = feature_selection('RFE', X_train, y_train, top_feat_woc)
         best_features_rfe_wc = feature_selection('RFE', X_train_new, y_train, top_feat_wc)
-        print('8/8')
+        logging_info('procces_full()','8/8')
 
         features = {
             'features_without_criba': features_without_criba,
@@ -131,48 +133,48 @@ class FeatureSelection:
 
         top_feat_woc = get_top_feat(len(X.columns), self.reduction)
         top_feat_wc = get_top_feat(len(features_with_criba[0]), self.reduction)
-        print('//---procces_reduction()---///---top_feat_woc -> {}, top_feat_wc -> {}'.format(top_feat_woc, top_feat_wc))
-
+        logging_info(f'procces_full()---top_feat_woc', top_feat_woc)
+        logging_info(f'procces_full()---top_feat_wc', top_feat_wc)
 
         # FILTER: PEARSON CORRELATION
         best_features_pearson_woc = (get_top_feat_by_config(self.id,'Person Correlation',False,top_feat_woc,False),None)
         best_features_pearson_wc = (get_top_feat_by_config(self.id,'Person Correlation',True,top_feat_wc,False),None)
-        print('1/8')
+        logging_info('procces_reduction()','1/8')
 
         # FILTER: MUTUAL INFORMATION
         best_features_mutual_woc = (get_top_feat_by_config(self.id,'Mutual Information',False,top_feat_woc,False),None)
         best_features_mutual_wc = (get_top_feat_by_config(self.id,'Mutual Information',True,top_feat_wc,False),None)
-        print('2/8')
+        logging_info('procces_reduction()','2/8')
 
         # WRAPPER: FORWARD SELECTION
         best_features_forward_woc = (get_top_feat_by_config(self.id,'Forward Selection',False,top_feat_woc,True),None)
         best_features_forward_wc = (get_top_feat_by_config(self.id,'Forward Selection',True,top_feat_wc,True),None)
-        print('3/8')
+        logging_info('procces_reduction()','3/8')
 
         # WRAPPER: BACKWARD SELECTION
         best_features_backward_woc = (get_top_feat_by_config(self.id,'Backward Selection',False,top_feat_woc,True),None)
         best_features_backward_wc = (get_top_feat_by_config(self.id,'Backward Selection',True,top_feat_wc,True),None)
-        print('4/8')
+        logging_info('procces_reduction()','4/8')
 
         # WRAPPER: FORWARD FLOATING SELECTION
         best_features_forward_float_woc = (get_top_feat_by_config(self.id,'Forward Floating Selection',False,top_feat_woc,True),None)
         best_features_forward_float_wc = (get_top_feat_by_config(self.id,'Forward Floating Selection',True,top_feat_wc,True),None)
-        print('5/8')
+        logging_info('procces_reduction()','5/8')
 
         # WRAPPER: BACKWARD FLOATING SELECTION
         best_features_backward_float_woc = (get_top_feat_by_config(self.id,'Backward Floating Selection',False,top_feat_woc,True),None)
         best_features_backward_float_wc = (get_top_feat_by_config(self.id,'Backward Floating Selection',True,top_feat_wc,True),None)
-        print('6/8')
+        logging_info('procces_reduction()','6/8')
 
         # EMBEDDED: FEATURE IMPORTANCE
         best_features_importance_woc = (get_top_feat_by_config(self.id,'Feature Importance',False,top_feat_woc,False),None)
         best_features_importance_wc = (get_top_feat_by_config(self.id,'Feature Importance',True,top_feat_wc,False),None)
-        print('7/8')
+        logging_info('procces_reduction()','7/8')
 
         # HYBRID: RFE
         best_features_rfe_woc = (get_top_feat_by_config(self.id,'RFE',False,top_feat_woc,False),None)
         best_features_rfe_wc = (get_top_feat_by_config(self.id,'RFE',True,top_feat_wc,False),None)
-        print('8/8')
+        logging_info('procces_reduction()','8/8')
 
         features = {
             'features_without_criba': features_without_criba,

@@ -3,23 +3,29 @@ $(document).ready(function(){
     $('select').formSelect();
 });
 function submitLaunch(){
-    var dataset = $('#dataset').val();
+    var dataset = $('#dataset option:selected').val();
     var criba = $('#criba').val();
     var reduction = $('#reduction').val();
+    var launchers = $('#launchers').val();
     var post = '{'+
             '"dataset": "'+dataset+'",'+
             '"criba": '+criba+','+
-            '"reduction": '+reduction+
+            '"reduction": '+reduction+','+
+            '"launchers": '+launchers+
         '}';
     $.ajax({
-        url: './feature-selection',
+        url: '/feature-selection',
         type: 'POST',
         data: post,
         contentType: "application/json",
         dataType: 'json'
-    }).done(function(data){
+    }).always(function(resp){
+        $('#configs').html($(resp.responseText).find('#configs').html());
         M.toast({html: 'Your launch was executed correctly'});
     });
+    //     .fail(function (jqXHR, textStatus) {
+    //     console.log('Error: '+jqXHR+', '+textStatus);
+    // });
 }
 
 function analyzeConfig(){
@@ -30,7 +36,7 @@ function analyzeConfig(){
         url:'/analyze-config',
         data:'dataset='+dataset
     }).done(function(resp){
-        $('#configs').html($(resp).find('#configs').html())
+        $('#configs').html($(resp.responseText).find('#configs').html());
         M.toast({html: 'FILTER DONE'});
 
         Highcharts.chart('chart-config', {
@@ -132,6 +138,42 @@ function analyzeConfig(){
 
 
 }
+
+// const allRanges = document.querySelectorAll(".range-wrap");
+// allRanges.forEach(wrap => {
+//   const range = wrap.querySelector(".range");
+//   const bubble = wrap.querySelector(".bubble");
+//
+//   range.addEventListener("input", () => {
+//     setBubble(range, bubble);
+//   });
+//   setBubble(range, bubble);
+// });
+//
+// function setBubble(range, bubble) {
+//   const val = range.value;
+//   const min = range.min ? range.min : 0;
+//   const max = range.max ? range.max : 100;
+//   const newVal = Number(((val - min) * 100) / (max - min));
+//   bubble.innerHTML = val;
+//
+//   // Sorta magic numbers based on size of the native UI thumb
+//   bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
+// }
+
+
+function printValue(sliderID, textbox) {
+
+    var x = document.getElementById(textbox);
+    var y = document.getElementById(sliderID);
+    if(sliderID=='launchers' && y.value==0)
+        x.value = 1;
+    else
+        x.value = y.value;
+}
+
+// window.onload = function() { printValue('slider1', 'rangeValue1'); printValue('slider2', 'rangeValue2'); printValue('slider3', 'rangeValue3'); printValue('slider4', 'rangeValue4'); }
+
 
 // function analyzeConfig(){
 //     var dataset = $('#select-dataset option:selected').val();
