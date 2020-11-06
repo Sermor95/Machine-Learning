@@ -2,109 +2,122 @@
 {% block content  %}
 
 <div class="section no-pad-bot" id="index-banner">
-  <div class="container">
-    <br><br>
-    <h1 class="header center blue-grey-text">FEATURE SELECTION</h1>
-    <div class="row center">
-      <h5 class="header col s12 light">This section shows the accuracy after applying several Feature Selection methods on the given dataset</h5>
-    </div>
 
-    <!--        Modal NEW LAUNCH-->
-    <div id="modal1" class="modal">
-        <div class="modal-content">
-            <h4>Configuration</h4>
-            <label for="dataset">Dataset</label>
-            <div class="row">
-                <select id="dataset" required>
-                    <option value="titanic" disabled selected>Choose your dataset</option>
+<!--    <div class="container">-->
+
+        <h1 class="header center blue-grey-text">FEATURE SELECTION</h1>
+        <div class="row center">
+          <h5 class="header col s12 light">This section shows the accuracy after applying several Feature Selection methods on the given dataset</h5>
+        </div>
+
+        <!--        Modal NEW LAUNCH-->
+        <div id="modal1" class="modal">
+            <div class="modal-content">
+                <h4>Configuration</h4>
+                <label for="dataset">Dataset</label>
+                <div class="row">
+                    <select id="dataset" required>
+                        <option value="titanic" disabled selected>Choose your dataset</option>
+                        <option value="titanic">Titanic</option>
+                        <option value="BreastCancerDataset">Breast Cancer</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <label for="criba">Criba</label>
+                    <div class="row">
+                        <div class="col s11">
+                            <input id="criba" type="range" min="0.7" max="0.95" step="0.05" onchange="printValue('criba','rangeCriba')">
+                        </div>
+                        <div class="col s1">
+                            <output id="rangeCriba"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <label for="reduction">Reduction (%)</label>
+                    <div class="row">
+                        <div class="col s11">
+                            <input id="reduction" type="range" min="10" max="90" step="10" onchange="printValue('reduction','rangeReduction')">
+                        </div>
+                        <div class="col s1">
+                            <output id="rangeReduction" type="text" size="2"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <label for="launchers">Launchers</label>
+                    <div class="row">
+                        <div class="col s11">
+                            <input id="launchers" type="range" min="0" max="10" m step="5" onchange="printValue('launchers','rangeLaunchers')">
+                        </div>
+                        <div class="col s1">
+                            <output id="rangeLaunchers" type="text"/>
+                        </div>
+                    </div>
+                </div>
+                <label for="model">Model</label>
+                <div class="row">
+                    <select id="model" required>
+                        <option value="decision-tree" disabled selected>Choose your model</option>
+                        <option value="decision-tree">decision-tree</option>
+                        <option value="random-forest">random-forest</option>
+                        <option value="gradient-boosting">gradient-boosting</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <a href="#!" class="modal-close btn waves-effect waves-light red lighten-2">Cancel</a>
+              <button onclick="submitLaunch()" class="modal-close btn waves-effect waves-light deep-purple lighten-1">Launch</button>
+            </div>
+            <script>$('select').formSelect();</script>
+        </div>
+
+        <div class="row">
+
+            <div class="col s2 left-align">
+              <a id="btnNewLaunch" class="waves-effect waves-light btn modal-trigger" data-target="modal1">New launch!</a>
+            </div>
+
+            <div class="col s8 center-align">
+              <div id="filter">
+                <div class="input-field col s6 left-align">
+                </div>
+                <div class="input-field col s6 right-align">
+                  <select id="select-dataset">
+                    <option value="" disabled selected>Choose your dataset</option>
                     <option value="titanic">Titanic</option>
                     <option value="BreastCancerDataset">Breast Cancer</option>
-                </select>
-            </div>
-            <div class="row">
-                <label for="criba">Criba</label>
-                <div class="row">
-                    <div class="col s11">
-                        <input id="criba" type="range" min="0.7" max="0.95" step="0.05" onchange="printValue('criba','rangeCriba')">
-<!--                        <div class="range-wrap">-->
-<!--                            <input id="criba" type="range" class="range" min="0.0" max="1.0" step="0.05"type="range" name="foo">-->
-<!--                            <output class="bubble"></output>-->
-<!--                        </div>-->
-                    </div>
-                    <div class="col s1">
-                        <output id="rangeCriba"/>
-                    </div>
+                  </select>
+                  <label>Dataset</label>
                 </div>
+              </div>
             </div>
-            <div class="row">
-                <label for="reduction">Reduction (%)</label>
-                <div class="row">
-                    <div class="col s11">
-                        <input id="reduction" type="range" min="10" max="90" step="10" onchange="printValue('reduction','rangeReduction')">
-                    </div>
-                    <div class="col s1">
-                        <output id="rangeReduction" type="text" size="2"/>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <label for="launchers">Launchers</label>
-                <div class="row">
-                    <div class="col s11">
-                        <input id="launchers" type="range" min="0" max="10" m step="5" onchange="printValue('launchers','rangeLaunchers')">
-                    </div>
-                    <div class="col s1">
-                        <output id="rangeLaunchers" type="text"/>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-          <a href="#!" class="modal-close btn waves-effect waves-light red lighten-2">Cancel</a>
-          <button onclick="submitLaunch()" class="modal-close btn waves-effect waves-light deep-purple lighten-1">Launch</button>
-        </div>
-        <script>$('select').formSelect();</script>
-    </div>
 
-    <div class="row">
+            <div class="col s2 right-align">
+              <button onclick="analyzeConfig()" class="btn waves-effect waves-light deep-purple lighten-1">Analyze</button>
+            </div>
 
-        <div class="col s2 left-align">
-          <a id="btnNewLaunch" class="waves-effect waves-light btn modal-trigger" data-target="modal1">New launch!</a>
         </div>
 
-        <div class="col s8 center-align">
-          <div id="filter">
-            <div class="input-field col s6 left-align">
-            </div>
-            <div class="input-field col s6 right-align">
-              <select id="select-dataset">
-                <option value="" disabled selected>Choose your dataset</option>
-                <option value="titanic">Titanic</option>
-                <option value="BreastCancerDataset">Breast Cancer</option>
-              </select>
-              <label>Dataset</label>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s2 right-align">
-          <button onclick="analyzeConfig()" class="btn waves-effect waves-light deep-purple lighten-1">Analyze</button>
-        </div>
-
-    </div>
-
-  </div>
+<!--    </div>-->
 </div>
-<figure class="highcharts-figure">
-    <div id="chart-config"></div>
-</figure>
-<div class="container" id="configs">
+
+
+<!--<div class="container">-->
+    <figure class="highcharts-figure">
+        <div id="chart-config"></div>
+    </figure>
+<!--</div>-->
+
+
+<div class=" blue-grey lighten-5" id="configs">
   <table class="responsive-table">
     <thead>
       <tr>
         <th>Configuration</th>
         <th>Criba</th>
         <th>Reduction</th>
+        <th>Model</th>
         <th>Launchers</th>
         <th>Results</th>
       </tr>
@@ -116,6 +129,7 @@
         <td>{{row.config_id}}</td>
         <td>{{row.criba}}</td>
         <td>{{row.reduction}}</td>
+        <td>{{row.model}}</td>
         <td>{{row.launchers}}</td>
         <td><a href="/result?config='{{row._id}}'">Show</a></td>
       </tr>
@@ -127,6 +141,22 @@
 
     </tbody>
   </table>
+</div>
+
+<div class="loader" id="preloader" style="display:none">
+      <div class="preloader-wrapper small active">
+        <div class="spinner-layer spinner-green-only">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div>
+          <div class="gap-patch">
+            <div class="circle"></div>
+          </div>
+          <div class="circle-clipper right">
+            <div class="circle"></div>
+          </div>
+        </div>
+     </div>
 </div>
 
 {% endblock %}

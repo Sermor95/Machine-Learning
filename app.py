@@ -4,7 +4,7 @@ from myprocessor import FeatureSelection
 from functions import *
 from repomongo import *
 import logging
-import traceback
+import traceback,sys
 
 app = Flask(__name__)
 
@@ -23,7 +23,12 @@ def analyze_config():
     dataset = request.args.get('dataset')
     configs = get_configs_by_dataset(dataset)
     res = get_avg_accuracy_by_configs(configs)
-    return res
+    html = render_template("configs.html", entries=get_configs_by_dataset(dataset))
+    json = {
+        'res': res,
+        'template': html
+    }
+    return json
 
 @app.route('/analyze-result', methods=["GET"])
 def analyze_result():
@@ -71,34 +76,53 @@ def feature_selection():
     try:
         json_request = request.get_json()
         launchers = json_request['launchers']
-        config = find_one_config(json_request['dataset'], json_request['criba'], 0)
+        config = find_one_config(json_request['dataset'], json_request['criba'], 0, json_request['model'])
+
+        # Create a base configuration
         if config == None:
-            feat_selection_1 = FeatureSelection(json_request['dataset'], json_request['criba'], 0)
+            feat_selection_1 = FeatureSelection(json_request['dataset'], json_request['criba'], 0, json_request['model'])
             feat_selection_1.procces_full()
             conf_id = save_feature_selection(feat_selection_1)
 
+        # Crete a configuration with reduction
         else:
             conf_id = config['_id']
         for i in range(launchers):
-            feat_selection_2 = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['reduction'])
+            feat_selection_2 = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['reduction'], json_request['model'])
             feat_selection_2.id = conf_id
             feat_selection_2.procces_reduction()
             save_feature_selection(feat_selection_2)
         rows = get_documents('config')
         return render_template("configs.html", entries=rows)
     except Exception as e:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+
         # output = str(e)
         logging.error(f'//---feature_selection()--->{e}---//')
         traceback.print_exc()
-        return error(e, traceback.print_exc())
+        return error(e, traceback.extract_tb(exc_traceback))
 
 
 @app.route('/analyze-results', methods=["GET"])
 def filter_results():
     config_id = request.args.get('config')
-    method = request.args.get('method')
-    criba = loads(request.args.get('criba').lower())
-    results = get_results_by_configid_method_criba(config_id,method,criba)
+    try:
+        method = request.args.get('method')
+    except:
+        method = ''
+    try:
+        criba = loads(request.args.get('criba').lower())
+    except:
+        criba = ''
+
+    if method != '' and criba != '':
+        results = get_results_by_configid_method_criba(config_id,method,criba)
+    elif method != '':
+        results = get_results_by_configid_method(config_id, method)
+    elif criba != '':
+        results = get_results_by_configid_criba(config_id, criba)
+    else:
+        results = None
     return render_template("results.html", entries=results, method=method, criba=criba)
 
 

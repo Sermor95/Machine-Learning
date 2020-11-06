@@ -18,9 +18,9 @@ To have a main base of results and not have to wait a long time for the first ru
 
 - Access to mongo_express under `http://localhost:8081`.
 - Create a new collection inside "machine_learning" database called 'fs_config'
-- Create a new document with the data from "fs_config". (Create all documents at the same time)
-- Create a new collection inside "machine_learning" database called 'fs_result'. (Create all documents at the same time)
-- Create a new document with the data from "fs_result"
+- Create a new document with the data of "fs_config" from database folder. (Create all documents at the same time)
+- Create a new collection inside "machine_learning" database called 'fs_result'. 
+- Create a new document with the data from of "fs_result" from database foulder. (Create all documents at the same time)
 
 **Warning!**: Do not import collection with the import option from mongo_express!
 
