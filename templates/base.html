@@ -28,7 +28,14 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
+<style>
+.loader {
+position: fixed;
+top :15%;
+left: 85%;
+margin: auto;
+}
+</style>
 </head>
 
 <body>
@@ -36,36 +43,33 @@
       <li><a href="/">Feature Selection</a></li>
     </ul>
     <nav class="blue-grey darken-4" role="navigation">
-        <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo align-left"><img class="circle" src="static/images/favicon.ico"></a>
+        <div class="nav-wrapper container">
           <ul class="right hide-on-med-and-down">
             <li><a class="dropdown-trigger" href="#!" data-target="dropdown1">Machine Learning<i class="material-icons right">arrow_drop_down</i></a></li>
           </ul>
-
-<!--          <ul id="nav-mobile" class="sidenav">-->
-<!--            <li><a href="#">Navbar Link</a></li>-->
-<!--          </ul>-->
-<!--          <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>-->
         </div>
     </nav>
     <ul id="slide-out" class="sidenav">
-        <li><div class="user-view">
-          <div class="background">
-<!--            <img src="static/images/backgroundMenu.jpg">-->
-          </div>
-          <a href="#user"><img class="circle" src="static/images/favicon.ico"></a>
-          <a href="#name"><span class="black-text name">Sergio Morales</span></a>
-          <a href="#email"><span class="black-text email">sermor95@gmail.com</span></a>
-        </div></li>
-        <li><a href="https://www.linkedin.com/in/sergio-morales-moreno/">LinkedIn</a></li>
-        <li><a href="https://github.com/Sermor95">Github</a></li>
-<!--        <li><div class="divider"></div></li>-->
-<!--        <li><a class="subheader">Subheader</a></li>-->
-<!--        <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>-->
+        <div class="light-blue darken-2">
+            <li>
+                <div class="user-view">
+                  <a href="#user"><img class="circle" src="static/images/favicon.ico"></a>
+                  <a href="#name"><span class="black-text name">Sergio Morales</span></a>
+                  <a href="#email"><span class="black-text email">sermor95@gmail.com</span></a>
+                </div>
+            </li>
+        </div>
+        <div class="light-blue lighten-4">
+            <li><a href="https://www.linkedin.com/in/sergio-morales-moreno/">LinkedIn</a></li>
+            <li><a href="https://github.com/Sermor95">Github</a></li>
+        </div>
     </ul>
     <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+
     <div class="container" id="">
         {% block content %}{% endblock %}
     </div>
+
     <br><br><br><br><br>
     <script src="{{url_for('static',filename='js/base.js')}}"></script>
     {% block script %}{% endblock %}

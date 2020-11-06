@@ -22,16 +22,16 @@ def save_feature_selection(feature_selection):
     db = get_db()
     posts_result = db.fs_result
     try:
-        config = find_one_config(feature_selection.dataset, feature_selection.criba, feature_selection.reduction)
+        config = find_one_config(feature_selection.dataset, feature_selection.criba, feature_selection.reduction, feature_selection.model)
         # Update RESULTS from CONFIG
         if config:
             launchers = config['launchers']+1
             fs_id = config['_id']
             update_config(fs_id,"launchers",launchers)
-        # save new CONFIG
+        # Create a new CONFIG
         else:
             launchers = 1
-            config = Config(feature_selection.dataset, feature_selection.criba, feature_selection.reduction)
+            config = Config(feature_selection.dataset, feature_selection.criba, feature_selection.reduction, feature_selection.model)
             config.launchers = launchers
             inserted = save_config(config)
             fs_id = inserted.inserted_id
@@ -87,31 +87,41 @@ def find_config_by_id(id):
         logging.error(f'//---find_config_by_id()--->{e}---//')
     return res
 
-def find_one_config(dataset, criba, reduction):
+def find_one_config(dataset, criba, reduction, model):
     db = get_db()
     posts = db.fs_config
     try:
-        res = posts.find_one({"dataset": dataset, "criba": criba, "reduction": reduction})
+        res = posts.find_one({"dataset": dataset, "criba": criba, "reduction": reduction, "model": model})
         pass
     except Exception as e:
         logging.error(f'//---find_one_config()--->{e}---//')
     return res
 
+# def find_one_config_by_model(dataset, criba, reduction, model):
+#     db = get_db()
+#     posts = db.fs_config
+#     try:
+#         res = posts.find_one({"dataset": dataset, "criba": criba, "reduction": reduction, "model": model})
+#         pass
+#     except Exception as e:
+#         logging.error(f'//---find_one_config_by_model()--->{e}---//')
+#     return res
+
 def find_cofigs_base(dataset, reduction):
     db = get_db()
     posts = db.fs_config
     try:
-        res = posts.find_one({"dataset": dataset, "reduction": reduction})
+        res = posts.find({"dataset": dataset, "reduction": reduction})
         pass
     except Exception as e:
         logging.error(f'//---find_cofigs_base()--->{e}---//')
-    return res
+    return list(res)
 
 def get_configs_by_dataset(dataset):
     db = get_db()
-    posts = db.fs_config
+    collection = db['fs_config']
     try:
-        res = posts.find({"dataset": dataset})
+        res = collection.find({"dataset": dataset})
         pass
     except Exception as e:
         logging.error(f'//---get_configs_by_dataset()--->{e}---//')
@@ -163,6 +173,27 @@ def get_results_by_configid_method_criba(config_id,method,criba):
     except Exception as e:
         logging.error(f'//---count_result_by_config()--->{e}---//')
     return res
+
+def get_results_by_configid_method(config_id,method):
+    db = get_db()
+    posts = db.fs_result
+    try:
+        res = posts.find({"config_id": ObjectId(config_id), "method": method})
+        pass
+    except Exception as e:
+        logging.error(f'//---get_results_by_configid_method()--->{e}---//')
+    return res
+
+def get_results_by_configid_criba(config_id,criba):
+    db = get_db()
+    posts = db.fs_result
+    try:
+        res = posts.find({"config_id": ObjectId(config_id), "criba": criba})
+        pass
+    except Exception as e:
+        logging.error(f'//---get_results_by_configid_criba()--->{e}---//')
+    return res
+
 
 def get_avg_results_by_configid_method_criba(config_id,method,criba):
     results = get_results_by_configid_method_criba(config_id,method,criba);
