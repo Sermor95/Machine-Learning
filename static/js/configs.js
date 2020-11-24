@@ -3,14 +3,17 @@ $(document).ready(function(){
     $('select').formSelect();
 });
 function submitLaunch(){
+    document.getElementById("preloader").style.display = "";
     var dataset = $('#dataset option:selected').val();
     var criba = $('#criba').val();
     var reduction = $('#reduction').val();
+    var model = $('#model').val();
     var launchers = $('#launchers').val();
     var post = '{'+
             '"dataset": "'+dataset+'",'+
             '"criba": '+criba+','+
             '"reduction": '+reduction+','+
+            '"model": "'+model+'",'+
             '"launchers": '+launchers+
         '}';
     $.ajax({
@@ -20,6 +23,7 @@ function submitLaunch(){
         contentType: "application/json",
         dataType: 'json'
     }).always(function(resp){
+        document.getElementById("preloader").style.display = "none";
         $('#configs').html($(resp.responseText).find('#configs').html());
         M.toast({html: 'Your launch was executed correctly'});
     });
@@ -28,113 +32,117 @@ function submitLaunch(){
     // });
 }
 
-function analyzeConfig(){
+function analyzeConfig() {
     var dataset = $('#select-dataset option:selected').val();
+    if (dataset != '') {
+        document.getElementById("preloader").style.display = "";
+        $.ajax({
+            type: 'GET',
+            url: '/analyze-config',
+            data: 'dataset=' + dataset
+        }).done(function (data) {
+            resp = data.res
+            $('#configs').html($(data.template).find('#configs').html());
+            document.getElementById("preloader").style.display = "none";
+            M.toast({html: 'FILTER DONE'});
 
-    $.ajax({
-        type:'GET',
-        url:'/analyze-config',
-        data:'dataset='+dataset
-    }).done(function(resp){
-        $('#configs').html($(resp.responseText).find('#configs').html());
-        M.toast({html: 'FILTER DONE'});
+            Highcharts.chart('chart-config', {
 
-        Highcharts.chart('chart-config', {
-
-            chart: {
-                scrollablePlotArea: {
-                    minWidth: 700,
-                    minHeight: 700
-                }
-            },
-
-            data: {
-            columns: resp['series']},
-
-            title: {
-                text: 'Average accuracy by CONFIG'
-            },
-
-            xAxis: {
-                categories: resp['categories']
-            },
-
-            yAxis: [{ // left y axis
-                title: {
-                    text: null
-                },
-                labels: {
-                    align: 'left',
-                    x: 3,
-                    y: 16,
-                    format: '{value:.,0f}'
-                },
-                showFirstLabel: false
-            }, { // right y axis
-                linkedTo: 0,
-                gridLineWidth: 0,
-                opposite: true,
-                title: {
-                    text: null
-                },
-                labels: {
-                    align: 'right',
-                    x: -3,
-                    y: 16,
-                    format: '{value:.,0f}'
-                },
-                showFirstLabel: false
-            }],
-
-            legend: {
-                align: 'left',
-                verticalAlign: 'top',
-                borderWidth: 0
-            },
-
-            tooltip: {
-                shared: true,
-                crosshairs: true
-            },
-
-            plotOptions: {
-                series: {
-                    cursor: 'pointer',
-                    point: {
-                        events: {
-                            click: function (e) {
-                                hs.htmlExpand(null, {
-                                    pageOrigin: {
-                                        x: e.pageX || e.clientX,
-                                        y: e.pageY || e.clientY
-                                    },
-                                    headingText: this.series.name,
-                                    maincontentText: Highcharts.dateFormat('%A, %b %e, %Y', this.x) + ':<br/> ' +
-                                        this.y + ' sessions',
-                                    width: 200
-                                });
-                            }
-                        }
-                    },
-                    marker: {
-                        lineWidth: 1
+                chart: {
+                    scrollablePlotArea: {
+                        minWidth: 700,
+                        minHeight: 700
                     }
-                }
-            },
+                },
 
-            series: [{
-                name: 'All sessions',
-                lineWidth: 4,
-                marker: {
-                    radius: 4
-                }
-            }, {
-                name: 'New users'
-            }]
+                data: {
+                    columns: resp['series']
+                },
+
+                title: {
+                    text: 'Average accuracy by CONFIG'
+                },
+
+                xAxis: {
+                    categories: resp['categories']
+                },
+
+                yAxis: [{ // left y axis
+                    title: {
+                        text: null
+                    },
+                    labels: {
+                        align: 'left',
+                        x: 3,
+                        y: 16,
+                        format: '{value:.,0f}'
+                    },
+                    showFirstLabel: false
+                }, { // right y axis
+                    linkedTo: 0,
+                    gridLineWidth: 0,
+                    opposite: true,
+                    title: {
+                        text: null
+                    },
+                    labels: {
+                        align: 'right',
+                        x: -3,
+                        y: 16,
+                        format: '{value:.,0f}'
+                    },
+                    showFirstLabel: false
+                }],
+
+                legend: {
+                    align: 'left',
+                    verticalAlign: 'top',
+                    borderWidth: 0
+                },
+
+                tooltip: {
+                    shared: true,
+                    crosshairs: true
+                },
+
+                plotOptions: {
+                    series: {
+                        cursor: 'pointer',
+                        point: {
+                            events: {
+                                click: function (e) {
+                                    hs.htmlExpand(null, {
+                                        pageOrigin: {
+                                            x: e.pageX || e.clientX,
+                                            y: e.pageY || e.clientY
+                                        },
+                                        headingText: this.series.name,
+                                        maincontentText: Highcharts.dateFormat('%A, %b %e, %Y', this.x) + ':<br/> ' +
+                                            this.y + ' sessions',
+                                        width: 200
+                                    });
+                                }
+                            }
+                        },
+                        marker: {
+                            lineWidth: 1
+                        }
+                    }
+                },
+
+                series: [{
+                    name: 'All sessions',
+                    lineWidth: 4,
+                    marker: {
+                        radius: 4
+                    }
+                }, {
+                    name: 'New users'
+                }]
+            });
+
         });
-
-    });
-
+    }
 
 
 }

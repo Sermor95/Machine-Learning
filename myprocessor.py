@@ -13,17 +13,18 @@ from util import *
 
 class FeatureSelection:
     
-    def __init__(self, dataset, criba, reduction):
+    def __init__(self, dataset, criba, reduction, model):
         self.id = None
         self.dataset = dataset
         self.criba = criba
         self.reduction = reduction
+        self.model = model
         self.results = []
         # self.debug_info = []
 
 
     def procces_full(self):
-
+        model = get_model(self.model)
         # CARGA DE DATOS
         # 'https://github.com/Sermor95/Machine-Learning/blob/master/datasets/'
         url='https://raw.githubusercontent.com/Sermor95/Machine-Learning/master/datasets/'+self.dataset+'.csv'
@@ -51,43 +52,43 @@ class FeatureSelection:
         features_with_criba = [criba[0],criba[1]]
 
         # FILTER: PEARSON CORRELATION
-        best_features_pearson_woc = feature_selection('pearson',X_train, y_train,top_feat_woc)
-        best_features_pearson_wc = feature_selection('pearson',X_train_new, y_train,top_feat_wc)
+        best_features_pearson_woc = feature_selection('pearson',X_train, y_train,top_feat_woc,None)
+        best_features_pearson_wc = feature_selection('pearson',X_train_new, y_train,top_feat_wc,None)
         logging_info('procces_full()','1/8')
 
         # FILTER: MUTUAL INFORMATION
-        best_features_mutual_woc = feature_selection('mutual_information', X_train, y_train, top_feat_woc)
-        best_features_mutual_wc = feature_selection('mutual_information', X_train_new, y_train, top_feat_wc)
+        best_features_mutual_woc = feature_selection('mutual_information', X_train, y_train, top_feat_woc,None)
+        best_features_mutual_wc = feature_selection('mutual_information', X_train_new, y_train, top_feat_wc,None)
         logging_info('procces_full()','2/8')
 
         # WRAPPER: FORWARD SELECTION
-        best_features_forward_woc = feature_selection('forward',X_train, y_train,top_feat_woc)
-        best_features_forward_wc = feature_selection('forward',X_train_new,y_train,top_feat_wc)
+        best_features_forward_woc = feature_selection('forward',X_train, y_train,top_feat_woc,model)
+        best_features_forward_wc = feature_selection('forward',X_train_new,y_train,top_feat_wc,model)
         logging_info('procces_full()','3/8')
 
         # WRAPPER: BACKWARD SELECTION
-        best_features_backward_woc = feature_selection('backward', X_train, y_train, 1)
-        best_features_backward_wc = feature_selection('backward', X_train_new, y_train, 1)
+        best_features_backward_woc = feature_selection('backward', X_train, y_train, 1,model)
+        best_features_backward_wc = feature_selection('backward', X_train_new, y_train, 1,model)
         logging_info('procces_full()','4/8')
 
         # WRAPPER: FORWARD FLOATING SELECTION
-        best_features_forward_float_woc = feature_selection('forward_floating', X_train, y_train, top_feat_woc)
-        best_features_forward_float_wc = feature_selection('forward_floating', X_train_new, y_train, top_feat_wc)
+        best_features_forward_float_woc = feature_selection('forward_floating', X_train, y_train, top_feat_woc,model)
+        best_features_forward_float_wc = feature_selection('forward_floating', X_train_new, y_train, top_feat_wc,model)
         logging_info('procces_full()','5/8')
 
         # WRAPPER: BACKWARD FLOATING SELECTION
-        best_features_backward_float_woc = feature_selection('backward_floating', X_train, y_train, 1)
-        best_features_backward_float_wc = feature_selection('backward_floating', X_train_new, y_train, 1)
+        best_features_backward_float_woc = feature_selection('backward_floating', X_train, y_train, 1,model)
+        best_features_backward_float_wc = feature_selection('backward_floating', X_train_new, y_train, 1,model)
         logging_info('procces_full()','6/8')
 
         # EMBEDDED: FEATURE IMPORTANCE
-        best_features_importance_woc = feature_selection('feature_importance',X_train, y_train,top_feat_woc)
-        best_features_importance_wc = feature_selection('feature_importance',X_train_new,y_train,top_feat_wc)
+        best_features_importance_woc = feature_selection('feature_importance',X_train, y_train,top_feat_woc,model)
+        best_features_importance_wc = feature_selection('feature_importance',X_train_new,y_train,top_feat_wc,model)
         logging_info('procces_full()','7/8')
 
         # HYBRID: RFE
-        best_features_rfe_woc = feature_selection('RFE', X_train, y_train, top_feat_woc)
-        best_features_rfe_wc = feature_selection('RFE', X_train_new, y_train, top_feat_wc)
+        best_features_rfe_woc = feature_selection('RFE', X_train, y_train, top_feat_woc,model)
+        best_features_rfe_wc = feature_selection('RFE', X_train_new, y_train, top_feat_wc,model)
         logging_info('procces_full()','8/8')
 
         features = {

@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
-from sklearn import tree
+from sklearn import tree, ensemble
 from sklearn.feature_selection import mutual_info_classif, RFE
 from mlxtend.feature_selection import SequentialFeatureSelector as sfs
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import balanced_accuracy_score
 from result import Result
 import time
@@ -51,33 +50,32 @@ def filter_mutual_info_select(X,y,top_feat):
     return list(X.columns[f_best[:int(top_feat)]])
 
 # DONE los wrapper methods deben devolver subjconjuntos de features por top_feat
-def wrapper_forward_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
+def wrapper_forward_selection(X,y,n,model):
+    model_forward=sfs(model,k_features=n,forward=True,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     # return list(model_forward.k_feature_names_)
     return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
 
-def wrapper_backward_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
+def wrapper_backward_selection(X,y,n,model):
+    model_forward=sfs(model,k_features=n,forward=False,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
     res.sort(key=len)
     return res
 
-def wrapper_forward_floating_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=True,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
+def wrapper_forward_floating_selection(X,y,n,model):
+    model_forward=sfs(model,k_features=n,forward=True,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
 
-def wrapper_backward_floating_selection(X,y,n):
-    model_forward=sfs(RandomForestRegressor(),k_features=n,forward=False,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
+def wrapper_backward_floating_selection(X,y,n,model):
+    model_forward=sfs(model,k_features=n,forward=False,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
     res.sort(key=len)
     return res
 
-def embedded_feature_importance(X,y,n):
-    model = RandomForestRegressor()
+def embedded_feature_importance(X,y,n,model):
     model.fit(X, y)
     feat_importance = pd.DataFrame(model.feature_importances_, columns=['Feature_Importance'],
                             index=X.columns)
@@ -85,17 +83,17 @@ def embedded_feature_importance(X,y,n):
     return list(feat_importance.index)[:n]
 
 # RFECV no pordría utilizarse ya que de entro los parámetros que ofrece, solo ofrece la posibilidad de min_features_to_select, y aún selecionando el mímino (1) para que así nos devuelva el ranking y hacer la selección manual, este escoge automáticamente el número minimo de características a devolver
-# ejemplo: RFECV(estimator=RandomForestRegressor(), step=1, cv=5,n_jobs=-1)
+# ejemplo: RFECV(estimator=ensemble.RandomForestClassifier(), step=1, cv=5,n_jobs=-1)
 # [1, 1, 1, 6, 8, 1, 5, 1, 14, 7, 20, 3, 9, 12, 1, 23, 15, 21, 2, 18, 17, 11, 13, 10, 28, 25, 4, 31, 30, 35, 29, 27, 32, 33, 22, 16, 19, 34, 37, 1, 24, 36, 26, 38, 39]
 # se observa que hay varias características en el top1, por esta razón se utiliza rfe sin cv
-def hybrid_RFE(X,y,n):
-    rfe = RFE(estimator=RandomForestRegressor(), step=1, n_features_to_select=1)
+def hybrid_RFE(X,y,n,model):
+    rfe = RFE(estimator=model, step=1, n_features_to_select=1)
     rfe.fit(X, y)
     ranking = pd.DataFrame(rfe.ranking_, columns=['Ranking'], index=X.columns)
     ranking.sort_values(by=['Ranking'], ascending=True, inplace=True)
     return list(ranking.index)[:n]
 
-def feature_selection(method,X,y,n):
+def feature_selection(method,X,y,n,model):
     res = []
     start_time = time.monotonic()
     if method == 'pearson':
@@ -103,22 +101,24 @@ def feature_selection(method,X,y,n):
     if method == 'mutual_information':
         res.append(filter_mutual_info_select(X, y, n))
     if method == 'forward':
-        res.append(wrapper_forward_selection(X,y,n))
+        res.append(wrapper_forward_selection(X,y,n,model))
     if method == 'backward':
-        res.append(wrapper_backward_selection(X,y,n))
+        res.append(wrapper_backward_selection(X,y,n,model))
     if method == 'forward_floating':
-        res.append(wrapper_forward_floating_selection(X,y,n))
+        res.append(wrapper_forward_floating_selection(X,y,n,model))
     if method == 'backward_floating':
-        res.append(wrapper_backward_floating_selection(X,y,n))
+        res.append(wrapper_backward_floating_selection(X,y,n,model))
     if method == 'feature_importance':
-        res.append(embedded_feature_importance(X,y,n))
+        res.append(embedded_feature_importance(X,y,n,model))
     if method == 'RFE':
-        res.append(hybrid_RFE(X,y,n))
+        res.append(hybrid_RFE(X,y,n,model))
     end_time = time.monotonic()
     res.append(get_execution_time(start_time, end_time))
     return res
 
 def procces_results(features, X_train, X_test, y_train, y_test):
+
+
     results = []
     results.append(get_result('Criba Person', features['features_without_criba'], False, X_train, X_test, y_train, y_test))
     results.append(get_result('Criba Person', features['features_with_criba'], True, X_train, X_test, y_train, y_test))
@@ -203,6 +203,13 @@ def get_result(method_name, feature_selection, criba, X_train, X_test, y_train, 
         result = Result(method_name, criba, bal_accur, feature_selection[1], feature_selection[0]).toJSON()
     return result
 
+def get_model(model):
+    if model == 'decision-tree':
+        return tree.DecisionTreeClassifier()
+    elif model == 'random-forest':
+        return ensemble.RandomForestClassifier()
+    elif model == 'gradient-boosting':
+        return ensemble.GradientBoostingClassifier()
 def get_datasets():
     return ['titanic', 'BreastCancerDataset']
 def get_methods():
@@ -224,7 +231,7 @@ def apply_one_hot_encoding(X):
     return X
 
 def pearson_corr(x, y):
-    return abs(round(x.corr(y),6))
+    return abs(round(x.corr(y, method='pearson'),6))
 
 def get_worst_feature(feature_i1,feature_i2,X_train,y_train,method_name):
     feature_y = y_train
@@ -295,10 +302,7 @@ def get_top_feat_by_config_sequential(config_id,method,criba,n):
 def reset_database():
     configs = []
     for dataset in get_datasets():
-        configs = find_cofigs_base(dataset, 0)
-        if configs is not None:
-            for config in configs:
-                configs.append(config)
+        configs += find_cofigs_base(dataset, 0)
 
     delete_configs()
     delete_results()
