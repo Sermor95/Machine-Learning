@@ -231,7 +231,7 @@ def apply_one_hot_encoding(X):
     return X
 
 def pearson_corr(x, y):
-    return abs(round(x.corr(y),6))
+    return abs(round(x.corr(y, method='pearson'),6))
 
 def get_worst_feature(feature_i1,feature_i2,X_train,y_train,method_name):
     feature_y = y_train
