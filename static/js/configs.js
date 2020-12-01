@@ -1,6 +1,27 @@
 $(document).ready(function(){
     $('#modal1').modal();
     $('select').formSelect();
+    $('#select-attribute').change(function (){
+        var options = [];
+        var values = [];
+        var opt = $('#select-attribute').val();
+        $.ajax({
+                async: false,
+                type: 'GET',
+                url: '/get_distinct_from_config',
+                data: 'attr='+opt
+            }).done(function (resp) {
+                values = resp.values
+            });
+            values.forEach(v => {
+	    		options += '<option value="'+v+'">'+v+'</option>';
+	    	});
+
+            $('#options').html("<select id='select-value' required>"+
+	    		  options+
+				"</select><label>Value</label>");
+            $('#select-value').formSelect();
+    })
 });
 function submitLaunch(){
     document.getElementById("preloader").style.display = "";
@@ -27,148 +48,176 @@ function submitLaunch(){
         $('#configs').html($(resp.responseText).find('#configs').html());
         M.toast({html: 'Your launch was executed correctly'});
     });
-    //     .fail(function (jqXHR, textStatus) {
-    //     console.log('Error: '+jqXHR+', '+textStatus);
-    // });
 }
 
 function analyzeConfig() {
     var dataset = $('#select-dataset option:selected').val();
+    var attribute = $('#select-attribute option:selected').val();
+    var value = $('#select-value option:selected').val();
+    $('#charts-generated').empty();
     if (dataset != '') {
         document.getElementById("preloader").style.display = "";
         $.ajax({
             type: 'GET',
             url: '/analyze-config',
-            data: 'dataset=' + dataset
+            data: 'dataset=' + dataset + '&attribute='+attribute + '&value='+value
         }).done(function (data) {
-            resp = data.res
+            var elem = data['res'];
             $('#configs').html($(data.template).find('#configs').html());
             document.getElementById("preloader").style.display = "none";
             M.toast({html: 'FILTER DONE'});
 
-            Highcharts.chart('chart-config', {
+            for(i=0;i<elem.length;i++) {
+                var chartCustom = elem[i];
 
-                chart: {
-                    scrollablePlotArea: {
-                        minWidth: 700,
-                        minHeight: 700
-                    }
-                },
+                if(data['is_base']==true){
+                    var chartTimeCustom = data['times'][i];
+                    $('#charts-generated').append("<figure class=highcharts-figure>" +
+                    "   <div class='row'>"    +
+                    "        <div id=chart-config"+i+" class='col s8'></div>" +
+                    "        <div id=chart-config-time"+i+" class='col s4'></div>" +
+                    "    </div>"+
+                    "    </figure>");
 
-                data: {
-                    columns: resp['series']
-                },
+                    Highcharts.chart('chart-config-time'+i, {
+                        chart: {
+                            plotBackgroundColor: null,
+                            plotBorderWidth: null,
+                            plotShadow: false,
+                            type: 'pie'
+                        },
 
-                title: {
-                    text: 'Average accuracy by CONFIG'
-                },
-
-                xAxis: {
-                    categories: resp['categories']
-                },
-
-                yAxis: [{ // left y axis
-                    title: {
-                        text: null
-                    },
-                    labels: {
-                        align: 'left',
-                        x: 3,
-                        y: 16,
-                        format: '{value:.,0f}'
-                    },
-                    showFirstLabel: false
-                }, { // right y axis
-                    linkedTo: 0,
-                    gridLineWidth: 0,
-                    opposite: true,
-                    title: {
-                        text: null
-                    },
-                    labels: {
-                        align: 'right',
-                        x: -3,
-                        y: 16,
-                        format: '{value:.,0f}'
-                    },
-                    showFirstLabel: false
-                }],
-
-                legend: {
-                    align: 'left',
-                    verticalAlign: 'top',
-                    borderWidth: 0
-                },
-
-                tooltip: {
-                    shared: true,
-                    crosshairs: true
-                },
-
-                plotOptions: {
-                    series: {
-                        cursor: 'pointer',
-                        point: {
-                            events: {
-                                click: function (e) {
-                                    hs.htmlExpand(null, {
-                                        pageOrigin: {
-                                            x: e.pageX || e.clientX,
-                                            y: e.pageY || e.clientY
-                                        },
-                                        headingText: this.series.name,
-                                        maincontentText: Highcharts.dateFormat('%A, %b %e, %Y', this.x) + ':<br/> ' +
-                                            this.y + ' sessions',
-                                        width: 200
-                                    });
+                        tooltip: {
+                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                        },
+                        accessibility: {
+                            point: {
+                                valueSuffix: '%'
+                            }
+                        },
+                        plotOptions: {
+                            pie: {
+                                allowPointSelect: true,
+                                cursor: 'pointer',
+                                dataLabels: {
+                                    enabled: true,
+                                    format: '<b>{point.name}</b>: {point} '
                                 }
                             }
                         },
-                        marker: {
-                            lineWidth: 1
+                        series: [{
+                            name: 'Time',
+                            colorByPoint: true,
+                            data: chartTimeCustom
+                        }]
+                    });
+
+                }else{
+                    $('#charts-generated').append("<figure class=highcharts-figure>" +
+                    "        <div id=chart-config"+i+"></div>" +
+                    "    </figure>");
+                }
+
+
+
+                Highcharts.chart('chart-config'+i, {
+
+                    chart: {
+                        scrollablePlotArea: {
+                            minWidth: 700,
+                            minHeight: 700
                         }
-                    }
-                },
+                    },
 
-                series: [{
-                    name: 'All sessions',
-                    lineWidth: 4,
-                    marker: {
-                        radius: 4
-                    }
-                }, {
-                    name: 'New users'
-                }]
-            });
+                    data: {
+                        columns: chartCustom['chartParam']['series']
+                    },
 
+                    title: {
+                        text: chartCustom['title']
+                    },
+
+                    xAxis: {
+                        categories: chartCustom['chartParam']['categories']
+                    },
+
+                    yAxis: [{ // left y axis
+                        title: {
+                            text: null
+                        },
+                        labels: {
+                            align: 'left',
+                            x: 3,
+                            y: 16,
+                            format: '{value:.,0f}'
+                        },
+                        showFirstLabel: false
+                    }, { // right y axis
+                        linkedTo: 0,
+                        gridLineWidth: 0,
+                        opposite: true,
+                        title: {
+                            text: null
+                        },
+                        labels: {
+                            align: 'right',
+                            x: -3,
+                            y: 16,
+                            format: '{value:.,0f}'
+                        },
+                        showFirstLabel: false
+                    }],
+
+                    legend: {
+                        align: 'left',
+                        verticalAlign: 'top',
+                        borderWidth: 0
+                    },
+
+                    tooltip: {
+                        shared: true,
+                        crosshairs: true
+                    },
+
+                    plotOptions: {
+                        series: {
+                            cursor: 'pointer',
+                            point: {
+                                events: {
+                                    click: function (e) {
+                                        hs.htmlExpand(null, {
+                                            pageOrigin: {
+                                                x: e.pageX || e.clientX,
+                                                y: e.pageY || e.clientY
+                                            },
+                                            headingText: this.series.name,
+                                            maincontentText: Highcharts.dateFormat('%A, %b %e, %Y', this.x) + ':<br/> ' +
+                                                this.y + ' sessions',
+                                            width: 200
+                                        });
+                                    }
+                                }
+                            },
+                            marker: {
+                                lineWidth: 1
+                            }
+                        }
+                    },
+
+                    series: [{
+                        name: 'All sessions',
+                        lineWidth: 4,
+                        marker: {
+                            radius: 4
+                        }
+                    }, {
+                        name: 'New users'
+                    }]
+                });
+            }
         });
     }
-
-
 }
-
-// const allRanges = document.querySelectorAll(".range-wrap");
-// allRanges.forEach(wrap => {
-//   const range = wrap.querySelector(".range");
-//   const bubble = wrap.querySelector(".bubble");
-//
-//   range.addEventListener("input", () => {
-//     setBubble(range, bubble);
-//   });
-//   setBubble(range, bubble);
-// });
-//
-// function setBubble(range, bubble) {
-//   const val = range.value;
-//   const min = range.min ? range.min : 0;
-//   const max = range.max ? range.max : 100;
-//   const newVal = Number(((val - min) * 100) / (max - min));
-//   bubble.innerHTML = val;
-//
-//   // Sorta magic numbers based on size of the native UI thumb
-//   bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
-// }
-
 
 function printValue(sliderID, textbox) {
 
@@ -180,63 +229,5 @@ function printValue(sliderID, textbox) {
         x.value = y.value;
 }
 
-// window.onload = function() { printValue('slider1', 'rangeValue1'); printValue('slider2', 'rangeValue2'); printValue('slider3', 'rangeValue3'); printValue('slider4', 'rangeValue4'); }
 
-
-// function analyzeConfig(){
-//     var dataset = $('#select-dataset option:selected').val();
-//
-//     $.ajax({
-//         type:'GET',
-//         url:'/analyze-config',
-//         data:'dataset='+dataset
-//     }).done(function(resp){
-//         $('#configs').html($(resp).find('#configs').html())
-//         M.toast({html: 'FILTER DONE'});
-//
-//         Highcharts.chart('chart-config', {
-//
-//             title: {
-//                 text: 'Average accuracy by CONFIG'
-//             },
-//
-//             yAxis: {
-//                 title: {
-//                     text: 'Accuracy'
-//                 }
-//             },
-//
-//             xAxis: {
-//                 categories: resp['categories']
-//             },
-//
-//             legend: {
-//                 layout: 'vertical',
-//                 align: 'right',
-//                 verticalAlign: 'middle'
-//             },
-//
-//             series: resp['series'],
-//
-//             responsive: {
-//                 rules: [{
-//                     condition: {
-//                         maxWidth: 500
-//                     },
-//                     chartOptions: {
-//                         legend: {
-//                             layout: 'horizontal',
-//                             align: 'center',
-//                             verticalAlign: 'bottom'
-//                         }
-//                     }
-//                 }]
-//             }
-//
-//         });
-//     });
-//
-//
-//
-// }
 

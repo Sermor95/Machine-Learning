@@ -2,30 +2,87 @@ from flask import Flask, request, render_template, current_app
 from bson.json_util import loads
 from myprocessor import FeatureSelection
 from functions import *
+from service import apply_feature_selection
+from util import *
 from repomongo import *
 import logging
 import traceback,sys
+import requests
 
 app = Flask(__name__)
 
 @app.route('/', methods=["GET"])
 def homepage():
-    # logging.debug('This is a debug message')
-    # logging.info('This is an info message')
-    # logging.warning('This is a warning message')
-    # logging.error('This is an error message')
-    # logging.critical('This is a critical message')
     rows = get_documents('config')
-    return render_template("configs.html", entries=rows)
+    datasets = get_distinct_from_config('dataset')
+    cribas = get_distinct_from_config('criba')
+    reductions = get_distinct_from_config('reduction')
+    models = get_distinct_from_config('model')
+    attributes = ['criba', 'reduction', 'model']
+    return render_template("configs.html", entries=rows, datasets=datasets, cribas=cribas, reductions=reductions, models=models, attributes=attributes)
+
+
+@app.route('/get_distinct_from_config', methods=["GET"])
+def distinct_from_config():
+    attr = request.args.get('attr')
+    json = {'attr': attr,
+            'values': get_distinct_from_config(attr)
+        }
+    return json
 
 @app.route('/analyze-config', methods=["GET"])
 def analyze_config():
     dataset = request.args.get('dataset')
-    configs = get_configs_by_dataset(dataset)
-    res = get_avg_accuracy_by_configs(configs)
-    html = render_template("configs.html", entries=get_configs_by_dataset(dataset))
+    attribute = request.args.get('attribute')
+    value = request.args.get('value')
+
+    is_base = False
+    configs = []
+    res = []
+    times = []
+
+    cribas = get_distinct_from_config('criba')
+    cribas.sort(reverse=True)
+    reductions = get_distinct_from_config('reduction')
+    reductions.sort(reverse=False)
+    models = ['decision-tree', 'random-forest', 'gradient-boosting']
+
+    if attribute == 'criba':
+        configs = get_configs_by_dataset_criba(dataset,float(value))
+        for r in reductions:
+            for m in models:
+                chart = list(get_configs_by_dataset_criba_reduction_model(dataset,float(value),r,m))
+                if len(chart) != 0:
+                    res.append({'title': 'Reduction: '+str(r)+'% - Model: '+m,
+                                    'chartParam': get_avg_accuracy_by_configs(chart)})
+    elif attribute == 'reduction':
+        if int(value)==0:
+            is_base = True
+        configs = get_configs_by_dataset_reduction(dataset, int(value))
+        for c in cribas:
+            for m in models:
+                chart = list(get_configs_by_dataset_criba_reduction_model(dataset,c,int(value),m))
+                if len(chart) != 0:
+                    res.append({'title': 'Criba: '+str(c)+' - Model: '+m,
+                                    'chartParam': get_avg_accuracy_by_configs(chart)})
+                    # Si la configuración es base (reduccion = 0) y solo debría haber una base por configuracion =>
+                    # añadimos grafica de tiempos
+                    if is_base and len(chart)==1:
+                        times.append(get_chart_of_times(chart))
+    elif attribute == 'model':
+        configs = get_configs_by_dataset_model(dataset, value)
+        for c in cribas:
+            for r in reductions:
+                chart = list(get_configs_by_dataset_criba_reduction_model(dataset,c,r,value))
+                if len(chart) != 0:
+                    res.append({'title': 'Criba: '+str(c)+' - Reduction: '+str(r)+'%',
+                                    'chartParam': get_avg_accuracy_by_configs(chart)})
+
+    html = render_template("configs.html", entries=configs)
     json = {
         'res': res,
+        'is_base': is_base,
+        'times': times,
         'template': html
     }
     return json
@@ -57,17 +114,6 @@ def results():
         traceback.print_exc()
         return error(e,traceback.print_exc())
 
-@app.route('/reset-database', methods=["GET"])
-def reset():
-    try:
-        reset_database()
-        return homepage()
-    except Exception as e:
-        # output = str(e)
-        logging.error(f'//---reset()--->{e}---//')
-        traceback.print_exc()
-        return error(e,traceback.print_exc())
-
 def error(exception, trace):
     return render_template("error.html", exception=exception, trace=trace)
 
@@ -75,24 +121,7 @@ def error(exception, trace):
 def feature_selection():
     try:
         json_request = request.get_json()
-        launchers = json_request['launchers']
-        config = find_one_config(json_request['dataset'], json_request['criba'], 0, json_request['model'])
-
-        # Create a base configuration
-        if config == None:
-            feat_selection_1 = FeatureSelection(json_request['dataset'], json_request['criba'], 0, json_request['model'])
-            feat_selection_1.procces_full()
-            conf_id = save_feature_selection(feat_selection_1)
-
-        # Crete a configuration with reduction
-        else:
-            conf_id = config['_id']
-        for i in range(launchers):
-            feat_selection_2 = FeatureSelection(json_request['dataset'], json_request['criba'], json_request['reduction'], json_request['model'])
-            feat_selection_2.id = conf_id
-            feat_selection_2.procces_reduction()
-            save_feature_selection(feat_selection_2)
-        rows = get_documents('config')
+        rows = apply_feature_selection(json_request)
         return render_template("configs.html", entries=rows)
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -124,6 +153,33 @@ def filter_results():
     else:
         results = None
     return render_template("results.html", entries=results, method=method, criba=criba)
+
+
+
+@app.route('/populate', methods=["GET"])
+def populate():
+    documents = []
+    try:
+        delete_configs()
+        delete_results()
+        configs = get_init_config()
+        for c in configs:
+            res = apply_feature_selection(c)
+            documents.append(res)
+        return '200 OK'
+    except Exception as e:
+        return e
+
+@app.route('/reset-database', methods=["GET"])
+def reset():
+    try:
+        reset_database()
+        return homepage()
+    except Exception as e:
+        # output = str(e)
+        logging.error(f'//---reset()--->{e}---//')
+        traceback.print_exc()
+        return error(e,traceback.print_exc())
 
 
 if __name__ == "__main__":

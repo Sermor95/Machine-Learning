@@ -1,15 +1,5 @@
-import json
-import pandas as pd
-from sklearn import tree
 from sklearn.model_selection import train_test_split
-
-from sklearn.tree import DecisionTreeClassifier
-from repomongo import *
-from functions import *
-from repomongo import *
-
 from util import *
-
 
 class FeatureSelection:
     
@@ -26,7 +16,6 @@ class FeatureSelection:
     def procces_full(self):
         model = get_model(self.model)
         # CARGA DE DATOS
-        # 'https://github.com/Sermor95/Machine-Learning/blob/master/datasets/'
         url='https://raw.githubusercontent.com/Sermor95/Machine-Learning/master/datasets/'+self.dataset+'.csv'
         data = pd.read_csv(url)
         X = data.iloc[:,:-1]
@@ -40,7 +29,7 @@ class FeatureSelection:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
         # CRIBA
-        criba = criba_Pearson(X_train,y_train,self.criba,'pearson')
+        criba = criba_Pearson(X_train,y_train,self.criba)
         X_train_new = X_train[criba[0]]
 
         top_feat_woc = get_top_feat(len(X.columns), self.reduction)
