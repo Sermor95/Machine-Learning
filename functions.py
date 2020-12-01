@@ -333,3 +333,4 @@ def reset_database():
     delete_configs()
     delete_results_not_base()
     insert_configs(configs)
+
