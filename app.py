@@ -1,13 +1,11 @@
-from flask import Flask, request, render_template, current_app
+from flask import Flask, request, render_template
 from bson.json_util import loads
-from myprocessor import FeatureSelection
-from functions import *
+
 from service import apply_feature_selection
 from util import *
 from repomongo import *
 import logging
 import traceback,sys
-import requests
 
 app = Flask(__name__)
 
