@@ -127,10 +127,55 @@ def get_configs_by_dataset(dataset):
         logging.error(f'//---get_configs_by_dataset()--->{e}---//')
     return res
 
+def get_configs_by_dataset_criba(dataset,criba):
+    db = get_db()
+    collection = db['fs_config']
+    try:
+        res = collection.find({"dataset": dataset, "criba": criba})
+        pass
+    except Exception as e:
+        logging.error(f'//---get_configs_by_dataset_criba()--->{e}---//')
+    return res
+
+def get_configs_by_dataset_reduction(dataset,reduction):
+    db = get_db()
+    collection = db['fs_config']
+    try:
+        res = collection.find({"dataset": dataset, "reduction": reduction})
+        pass
+    except Exception as e:
+        logging.error(f'//---get_configs_by_dataset_reduction()--->{e}---//')
+    return res
+
+def get_configs_by_dataset_model(dataset,model):
+    db = get_db()
+    collection = db['fs_config']
+    try:
+        res = collection.find({"dataset": dataset, "model": model})
+        pass
+    except Exception as e:
+        logging.error(f'//---get_configs_by_dataset_model()--->{e}---//')
+    return res
+
+def get_configs_by_dataset_criba_reduction_model(dataset,criba,reduction,model):
+    db = get_db()
+    collection = db['fs_config']
+    try:
+        res = collection.find({"dataset": dataset, "criba": criba, "reduction": reduction, "model": model})
+        pass
+    except Exception as e:
+        logging.error(f'//---get_configs_by_dataset_criba_reduction_model()--->{e}---//')
+    return res
+
 def count_configs_by_dataset(dataset):
     db = get_db()
     posts_result = db.fs_config
     return posts_result.count({"dataset": dataset})
+
+def get_distinct_from_config(attr):
+    db = get_db()
+    collection = db['fs_config']
+    return collection.find().distinct(attr)
 
 
 # CRUDS for RESULT
@@ -142,6 +187,12 @@ def insert_results(results):
     return ids
 
 def delete_results():
+    db = get_db()
+    documents = db.fs_result
+    deletes = documents.delete_many({})
+    return deletes
+
+def delete_results_not_base():
     db = get_db()
     documents = db.fs_result
     deletes = documents.delete_many({ "time": None })

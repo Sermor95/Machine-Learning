@@ -20,6 +20,7 @@
                         <option value="titanic" disabled selected>Choose your dataset</option>
                         <option value="titanic">Titanic</option>
                         <option value="BreastCancerDataset">Breast Cancer</option>
+                        <option value="spambase">Spambase</option>
                     </select>
                 </div>
                 <div class="row">
@@ -81,14 +82,27 @@
             <div class="col s8 center-align">
               <div id="filter">
                 <div class="input-field col s6 left-align">
-                </div>
-                <div class="input-field col s6 right-align">
                   <select id="select-dataset">
                     <option value="" disabled selected>Choose your dataset</option>
-                    <option value="titanic">Titanic</option>
-                    <option value="BreastCancerDataset">Breast Cancer</option>
+                    {% for row in datasets %}
+                    <option value="{{row}}">{{row}}</option>
+                    {% endfor %}
                   </select>
                   <label>Dataset</label>
+                </div>
+
+                <div class="input-field col s3">
+                    <select id="select-attribute">
+                        <option value="" disabled selected>Choose your attribute</option>
+                        {% for row in attributes %}
+                        <option value={{row}}>{{row}}</option>
+                        {% endfor %}
+                    </select>
+                  <label>Attribute</label>
+                </div>
+
+                <div class="input-field col s3" id="options">
+
                 </div>
               </div>
             </div>
@@ -104,6 +118,9 @@
 
 
 <!--<div class="container">-->
+<div id="charts-generated">
+
+</div>
     <figure class="highcharts-figure">
         <div id="chart-config"></div>
     </figure>

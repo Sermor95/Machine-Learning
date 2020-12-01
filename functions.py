@@ -10,21 +10,40 @@ from datetime import timedelta
 from repomongo import *
 import math
 
-def criba_Pearson(X,y,criba,method_name):
+
+
+# sagrado
+
+# list_columns = list(map(lambda col: upper[col][upper[col] > 0.8].index.values, corr.columns))
+# aux_list = [x for x in range(len(list_columns)) if len(list_columns[x])>0]
+# res = [[X.columns[i], list(list_columns[i])] for i in aux_list]
+# res_aux = [[sublist[0],element,get_corr(sublist[0],element)] for sublist in res for element in sublist[1]]
+# res_aux_1 = sorted(res_aux, key=lambda e: e[2], reverse=True)
+# res_aux_1
+
+def top_corr(X, criba):
+    get_corr = lambda a, b: corr.iloc[X.columns.get_loc(a), X.columns.get_loc(b)]
+    corr = X.corr(method='pearson').abs()
+    upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(np.bool))
+    list_columns = list(map(lambda col: upper[col][upper[col] > criba].index.values, corr.columns))
+    aux_list = [x for x in range(len(list_columns)) if len(list_columns[x]) > 0]
+    res = [[X.columns[i], list(list_columns[i])] for i in aux_list]
+    res_aux = [[sublist[0], element, get_corr(sublist[0], element)] for sublist in res for element in sublist[1]]
+    res_aux_1 = sorted(res_aux, key=lambda e: e[2], reverse=True)
+    if res_aux_1:
+        return res_aux_1[0]
+    else:
+        return []
+
+def criba_Pearson(X,y,criba):
     start_time = time.monotonic()
     res = []
-    # debug_info = []
-    # debug_info.append('CRIBA PEARSON')
-    droped_columns = set()
-    corr = X.corr(method=method_name).abs()
-    for i in range(corr.shape[0]):
-        for j in range(i+1, corr.shape[0]):
-            if corr.iloc[i,j] >= criba:
-                worst_feature = get_worst_feature(i,j,X,y,method_name)
-                droped_columns.add(X.columns[worst_feature])
-                # debug_info.append(' - {0}/{1} => {2} //--// {0}/y => {3} // {1}/y => {4} //--// worst feature => {5}'.format(X.columns[i],X.columns[j],round(corr.iloc[i,j],4),pearson_corr(X.iloc[:,i],y),pearson_corr(X.iloc[:,j],y),X.columns[worst_feature]))
-
-    X = X.drop(droped_columns, axis=1)
+    top = top_corr(X, criba)
+    while top:
+        worst = get_worst_feature(X.columns.get_loc(top[0]), X.columns.get_loc(top[1]), X, y)
+        # info.append({'redundancia': top, 'worst': X.columns[worst]})
+        X = X.drop([X.columns[worst]], axis=1)
+        top = top_corr(X, criba)
     res.append(list(X.columns))
     end_time = time.monotonic()
     res.append(get_execution_time(start_time, end_time))
@@ -32,7 +51,6 @@ def criba_Pearson(X,y,criba,method_name):
     return res
 
 def filter_pearson_correlation(X,y,top_feat):
-    # Done Eliminar donde los values que sean nan -> https://stackoverflow.com/questions/52466844/pandas-corr-returning-nan-too-often
     best_features = {}
     for i in range(len(X.columns)):
         corr = pearson_corr(X.iloc[:,i],y)
@@ -49,27 +67,29 @@ def filter_mutual_info_select(X,y,top_feat):
     f_best = list(map(lambda e: e[0], mi))
     return list(X.columns[f_best[:int(top_feat)]])
 
-# DONE los wrapper methods deben devolver subjconjuntos de features por top_feat
-def wrapper_forward_selection(X,y,n,model):
-    model_forward=sfs(model,k_features=n,forward=True,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
-    model_forward.fit(X,y)
-    # return list(model_forward.k_feature_names_)
-    return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
-
-def wrapper_backward_selection(X,y,n,model):
-    model_forward=sfs(model,k_features=n,forward=False,floating=False,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
+def wrapper_forward_selection(X,y,top_feat,model):
+    model_forward=sfs(model,k_features=top_feat,forward=True,floating=False,verbose=0,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
     res.sort(key=len)
     return res
 
-def wrapper_forward_floating_selection(X,y,n,model):
-    model_forward=sfs(model,k_features=n,forward=True,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
+def wrapper_backward_selection(X,y,top_feat,model):
+    model_forward=sfs(model,k_features=top_feat,forward=False,floating=False,verbose=0,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
-    return list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res.sort(key=len)
+    return res
 
-def wrapper_backward_floating_selection(X,y,n,model):
-    model_forward=sfs(model,k_features=n,forward=False,floating=True,verbose=1,cv=5,n_jobs=-1,scoring='accuracy')
+def wrapper_forward_floating_selection(X,y,top_feat,model):
+    model_forward=sfs(model,k_features=top_feat,forward=True,floating=True,verbose=0,cv=5,n_jobs=-1,scoring='accuracy')
+    model_forward.fit(X,y)
+    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res.sort(key=len)
+    return res
+
+def wrapper_backward_floating_selection(X,y,top_feat,model):
+    model_forward=sfs(model,k_features=top_feat,forward=False,floating=True,verbose=0,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
     res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
     res.sort(key=len)
@@ -82,10 +102,6 @@ def embedded_feature_importance(X,y,n,model):
     feat_importance.sort_values(by=['Feature_Importance'], ascending=False, inplace=True)
     return list(feat_importance.index)[:n]
 
-# RFECV no pordría utilizarse ya que de entro los parámetros que ofrece, solo ofrece la posibilidad de min_features_to_select, y aún selecionando el mímino (1) para que así nos devuelva el ranking y hacer la selección manual, este escoge automáticamente el número minimo de características a devolver
-# ejemplo: RFECV(estimator=ensemble.RandomForestClassifier(), step=1, cv=5,n_jobs=-1)
-# [1, 1, 1, 6, 8, 1, 5, 1, 14, 7, 20, 3, 9, 12, 1, 23, 15, 21, 2, 18, 17, 11, 13, 10, 28, 25, 4, 31, 30, 35, 29, 27, 32, 33, 22, 16, 19, 34, 37, 1, 24, 36, 26, 38, 39]
-# se observa que hay varias características en el top1, por esta razón se utiliza rfe sin cv
 def hybrid_RFE(X,y,n,model):
     rfe = RFE(estimator=model, step=1, n_features_to_select=1)
     rfe.fit(X, y)
@@ -211,7 +227,7 @@ def get_model(model):
     elif model == 'gradient-boosting':
         return ensemble.GradientBoostingClassifier()
 def get_datasets():
-    return ['titanic', 'BreastCancerDataset']
+    return ['titanic', 'BreastCancerDataset', 'spambase']
 def get_methods():
     return ['Criba Person', 'Person Correlation', 'Mutual Information', 'Forward Selection', 'Backward Selection', 'Forward Floating Selection', 'Backward Floating Selection', 'Feature Importance', 'RFE']
 
@@ -233,7 +249,7 @@ def apply_one_hot_encoding(X):
 def pearson_corr(x, y):
     return abs(round(x.corr(y, method='pearson'),6))
 
-def get_worst_feature(feature_i1,feature_i2,X_train,y_train,method_name):
+def get_worst_feature(feature_i1,feature_i2,X_train,y_train):
     feature_y = y_train
     feature_1 = X_train.iloc[:,feature_i1]
     feature_2 = X_train.iloc[:,feature_i2]
@@ -284,6 +300,14 @@ def get_avg_accuracy_by_configs(configs):
     return res
 
 
+def get_chart_of_times(config):
+    res = []
+    methods = get_methods()
+    results = list(get_results_by_config(config[0]['_id']))
+    for r in results:
+        res.append({'name': r['method'],'y': r['time']})
+    return res
+
 def get_top_feat(num_columns, reduction):
     return int(num_columns-((num_columns*reduction)/100))
 
@@ -299,11 +323,14 @@ def get_top_feat_by_config(config_id,method,criba,n,is_wraper):
 def get_top_feat_by_config_sequential(config_id,method,criba,n):
     return list(get_results_by_configid_method_criba(config_id,method,criba))[n-1]
 
+
+
 def reset_database():
     configs = []
     for dataset in get_datasets():
         configs += find_cofigs_base(dataset, 0)
 
     delete_configs()
-    delete_results()
+    delete_results_not_base()
     insert_configs(configs)
+
