@@ -227,7 +227,7 @@ def get_model(model):
     elif model == 'gradient-boosting':
         return ensemble.GradientBoostingClassifier()
 def get_datasets():
-    return ['titanic', 'BreastCancerDataset', 'spambase']
+    return ['titanic', 'titanic', 'BreastCancerDataset', 'spambase']
 def get_methods():
     return ['Criba Person', 'Person Correlation', 'Mutual Information', 'Forward Selection', 'Backward Selection', 'Forward Floating Selection', 'Backward Floating Selection', 'Feature Importance', 'RFE']
 
