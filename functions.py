@@ -50,64 +50,69 @@ def criba_Pearson(X,y,criba):
     # res.append(debug_info)
     return res
 
+
 def filter_pearson_correlation(X,y,top_feat):
     best_features = {}
     for i in range(len(X.columns)):
-        corr = pearson_corr(X.iloc[:,i],y)
+        corr = pearson_corr(X.iloc[:,i],y) # Correlación entre una columna y la variable objetivo
         corr = 0 if math.isnan(corr) else corr
         col = X.columns[i]
-        best_features[col] = corr
-    best_features = sorted(best_features.items(), key=lambda x: x[1], reverse=True)
-    res = list(map(lambda k: k[0], best_features))
-    return res[:int(top_feat)]
+        best_features[col] = corr  # Map{columna: correlacion con y}
+    best_features = sorted(best_features.items(), key=lambda x: x[1], reverse=True) # ordenar por la correlacion
+    res = list(map(lambda k: k[0], best_features)) # transformar a lista solo con los nombres de columnas
+    return res[:int(top_feat)] # devolver top
+
+def pearson_corr(x, y):
+    return abs(round(x.corr(y, method='pearson'),6)) # valor absoluto y redondear a 6 decimales
 
 def filter_mutual_info_select(X,y,top_feat):
-    mi = list(enumerate(mutual_info_classif(X,y)))
-    mi.sort(reverse=True, key=lambda x: x[1])
-    f_best = list(map(lambda e: e[0], mi))
-    return list(X.columns[f_best[:int(top_feat)]])
+    mi = list(enumerate(mutual_info_classif(X,y))) # Map{columna: correlacion con y}
+    mi.sort(reverse=True, key=lambda x: x[1]) # ordenar por la correlacion
+    f_best = list(map(lambda e: e[0], mi)) # transformar a lista solo con los nombres de columnas
+    return list(X.columns[f_best[:int(top_feat)]]) # devolver top
 
 def wrapper_forward_selection(X,y,top_feat,model):
     model_forward=sfs(model,k_features=top_feat,forward=True,floating=False,verbose=0,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
-    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values())) # [[len0],[len1],[len2],...,[lenN-1]]
     res.sort(key=len)
     return res
 
 def wrapper_backward_selection(X,y,top_feat,model):
     model_forward=sfs(model,k_features=top_feat,forward=False,floating=False,verbose=0,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
-    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values())) # [[len0],[len1],[len2],...,[lenN-1]]
     res.sort(key=len)
     return res
 
 def wrapper_forward_floating_selection(X,y,top_feat,model):
     model_forward=sfs(model,k_features=top_feat,forward=True,floating=True,verbose=0,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
-    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values())) # [[len0],[len1],[len2],...,[lenN-1]]
     res.sort(key=len)
     return res
 
 def wrapper_backward_floating_selection(X,y,top_feat,model):
     model_forward=sfs(model,k_features=top_feat,forward=False,floating=True,verbose=0,cv=5,n_jobs=-1,scoring='accuracy')
     model_forward.fit(X,y)
-    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values()))
+    res = list(map(lambda e: e['feature_names'], model_forward.subsets_.values())) # [[len0],[len1],[len2],...,[lenN-1]]
     res.sort(key=len)
     return res
 
 def embedded_feature_importance(X,y,n,model):
     model.fit(X, y)
     feat_importance = pd.DataFrame(model.feature_importances_, columns=['Feature_Importance'],
-                            index=X.columns)
-    feat_importance.sort_values(by=['Feature_Importance'], ascending=False, inplace=True)
-    return list(feat_importance.index)[:n]
+                            index=X.columns)  # Map{columna: fet_importance}
+    feat_importance.sort_values(by=['Feature_Importance'], ascending=False, inplace=True) # Ordenar
+    return list(feat_importance.index)[:n] # Devolver top
 
 def hybrid_RFE(X,y,n,model):
-    rfe = RFE(estimator=model, step=1, n_features_to_select=1)
+    rfe = RFE(estimator=model, step=1, n_features_to_select=1) # Al solo seleccionar 1 caracteristica, RFE crea un ranking y podremos ordenarlas
     rfe.fit(X, y)
     ranking = pd.DataFrame(rfe.ranking_, columns=['Ranking'], index=X.columns)
-    ranking.sort_values(by=['Ranking'], ascending=True, inplace=True)
-    return list(ranking.index)[:n]
+    ranking.sort_values(by=['Ranking'], ascending=True, inplace=True) # Ordenamos
+    return list(ranking.index)[:n] # Devolver top
+
 
 def feature_selection(method,X,y,n,model):
     res = []
@@ -133,7 +138,6 @@ def feature_selection(method,X,y,n,model):
     return res
 
 def procces_results(features, X_train, X_test, y_train, y_test):
-
 
     results = []
     results.append(get_result('Criba Person', features['features_without_criba'], False, X_train, X_test, y_train, y_test))
@@ -179,10 +183,10 @@ def procces_results(features, X_train, X_test, y_train, y_test):
 
     # WRAPPER: BACKWARD FLOATING SELECTION
     results.append(
-        get_result('Backward Floating Selection', features['features_forward_float_woc'], False, X_train, X_test, y_train,
+        get_result('Backward Floating Selection', features['features_backward_float_woc'], False, X_train, X_test, y_train,
                    y_test))
     results.append(
-        get_result('Backward Floating Selection', features['features_forward_float_wc'], True, X_train, X_test, y_train,
+        get_result('Backward Floating Selection', features['features_backward_float_wc'], True, X_train, X_test, y_train,
                    y_test))
 
 
@@ -302,11 +306,19 @@ def get_avg_accuracy_by_configs(configs):
 
 def get_chart_of_times(config):
     res = []
+    woc = []
+    wc = []
+
     methods = get_methods()
     results = list(get_results_by_config(config[0]['_id']))
     for r in results:
-        res.append({'name': r['method'],'y': r['time']})
-    return res
+        if r['criba'] is False:
+            woc.append(r['time'])
+        else:
+            wc.append(r['time'])
+
+
+    return {'methods': methods,'twoc': woc,'twc': wc}
 
 def get_top_feat(num_columns, reduction):
     return int(num_columns-((num_columns*reduction)/100))
