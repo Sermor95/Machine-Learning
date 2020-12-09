@@ -74,41 +74,50 @@ function analyzeConfig() {
                     var chartTimeCustom = data['times'][i];
                     $('#charts-generated').append("<figure class=highcharts-figure>" +
                     "   <div class='row'>"    +
-                    "        <div id=chart-config"+i+" class='col s8'></div>" +
-                    "        <div id=chart-config-time"+i+" class='col s4'></div>" +
+                    // "        <div id=chart-config"+i+" class='col s8'></div>" +
+                    "        <div id=chart-config-time"+i+"></div>" +
                     "    </div>"+
                     "    </figure>");
 
                     Highcharts.chart('chart-config-time'+i, {
                         chart: {
-                            plotBackgroundColor: null,
-                            plotBorderWidth: null,
-                            plotShadow: false,
-                            type: 'pie'
+                            type: 'column'
                         },
-
-                        tooltip: {
-                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                        title: {
+                            text: chartCustom['title']
                         },
-                        accessibility: {
-                            point: {
-                                valueSuffix: '%'
+                        xAxis: {
+                            categories: chartTimeCustom['methods'],
+                            crosshair: true
+                        },
+                        yAxis: {
+                            min: 0,
+                            title: {
+                                text: 'Time (seconds)'
                             }
                         },
+                        tooltip: {
+                            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                                '<td style="padding:0"><b>{point.y:.1f} s</b></td></tr>',
+                            footerFormat: '</table>',
+                            shared: true,
+                            useHTML: true
+                        },
                         plotOptions: {
-                            pie: {
-                                allowPointSelect: true,
-                                cursor: 'pointer',
-                                dataLabels: {
-                                    enabled: true,
-                                    format: '<b>{point.name}</b>: {point} '
-                                }
+                            column: {
+                                pointPadding: 0.2,
+                                borderWidth: 0
                             }
                         },
                         series: [{
-                            name: 'Time',
-                            colorByPoint: true,
-                            data: chartTimeCustom
+                            name: 'Without criba',
+                            data: chartTimeCustom['twoc']
+
+                        }, {
+                            name: 'With criba',
+                            data: chartTimeCustom['twc']
+
                         }]
                     });
 
@@ -116,104 +125,103 @@ function analyzeConfig() {
                     $('#charts-generated').append("<figure class=highcharts-figure>" +
                     "        <div id=chart-config"+i+"></div>" +
                     "    </figure>");
+
+                    Highcharts.chart('chart-config'+i, {
+
+                        chart: {
+                            scrollablePlotArea: {
+                                minWidth: 700,
+                                minHeight: 700
+                            }
+                        },
+
+                        data: {
+                            columns: chartCustom['chartParam']['series']
+                        },
+
+                        title: {
+                            text: chartCustom['title']
+                        },
+
+                        xAxis: {
+                            categories: chartCustom['chartParam']['categories']
+                        },
+
+                        yAxis: [{ // left y axis
+                            title: {
+                                text: null
+                            },
+                            labels: {
+                                align: 'left',
+                                x: 3,
+                                y: 16,
+                                format: '{value:.,0f}'
+                            },
+                            showFirstLabel: false
+                        }, { // right y axis
+                            linkedTo: 0,
+                            gridLineWidth: 0,
+                            opposite: true,
+                            title: {
+                                text: null
+                            },
+                            labels: {
+                                align: 'right',
+                                x: -3,
+                                y: 16,
+                                format: '{value:.,0f}'
+                            },
+                            showFirstLabel: false
+                        }],
+
+                        legend: {
+                            align: 'left',
+                            verticalAlign: 'top',
+                            borderWidth: 0
+                        },
+
+                        tooltip: {
+                            shared: true,
+                            crosshairs: true
+                        },
+
+                        plotOptions: {
+                            series: {
+                                cursor: 'pointer',
+                                point: {
+                                    events: {
+                                        click: function (e) {
+                                            hs.htmlExpand(null, {
+                                                pageOrigin: {
+                                                    x: e.pageX || e.clientX,
+                                                    y: e.pageY || e.clientY
+                                                },
+                                                headingText: this.series.name,
+                                                maincontentText: Highcharts.dateFormat('%A, %b %e, %Y', this.x) + ':<br/> ' +
+                                                    this.y + ' sessions',
+                                                width: 200
+                                            });
+                                        }
+                                    }
+                                },
+                                marker: {
+                                    lineWidth: 1
+                                }
+                            }
+                        },
+
+                        series: [{
+                            name: 'All sessions',
+                            lineWidth: 4,
+                            marker: {
+                                radius: 4
+                            }
+                        }, {
+                            name: 'New users'
+                        }]
+                    });
                 }
 
-
-
-                Highcharts.chart('chart-config'+i, {
-
-                    chart: {
-                        scrollablePlotArea: {
-                            minWidth: 700,
-                            minHeight: 700
-                        }
-                    },
-
-                    data: {
-                        columns: chartCustom['chartParam']['series']
-                    },
-
-                    title: {
-                        text: chartCustom['title']
-                    },
-
-                    xAxis: {
-                        categories: chartCustom['chartParam']['categories']
-                    },
-
-                    yAxis: [{ // left y axis
-                        title: {
-                            text: null
-                        },
-                        labels: {
-                            align: 'left',
-                            x: 3,
-                            y: 16,
-                            format: '{value:.,0f}'
-                        },
-                        showFirstLabel: false
-                    }, { // right y axis
-                        linkedTo: 0,
-                        gridLineWidth: 0,
-                        opposite: true,
-                        title: {
-                            text: null
-                        },
-                        labels: {
-                            align: 'right',
-                            x: -3,
-                            y: 16,
-                            format: '{value:.,0f}'
-                        },
-                        showFirstLabel: false
-                    }],
-
-                    legend: {
-                        align: 'left',
-                        verticalAlign: 'top',
-                        borderWidth: 0
-                    },
-
-                    tooltip: {
-                        shared: true,
-                        crosshairs: true
-                    },
-
-                    plotOptions: {
-                        series: {
-                            cursor: 'pointer',
-                            point: {
-                                events: {
-                                    click: function (e) {
-                                        hs.htmlExpand(null, {
-                                            pageOrigin: {
-                                                x: e.pageX || e.clientX,
-                                                y: e.pageY || e.clientY
-                                            },
-                                            headingText: this.series.name,
-                                            maincontentText: Highcharts.dateFormat('%A, %b %e, %Y', this.x) + ':<br/> ' +
-                                                this.y + ' sessions',
-                                            width: 200
-                                        });
-                                    }
-                                }
-                            },
-                            marker: {
-                                lineWidth: 1
-                            }
-                        }
-                    },
-
-                    series: [{
-                        name: 'All sessions',
-                        lineWidth: 4,
-                        marker: {
-                            radius: 4
-                        }
-                    }, {
-                        name: 'New users'
-                    }]
-                });
             }
         });
     }
